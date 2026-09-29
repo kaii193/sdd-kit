@@ -2,16 +2,12 @@
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
-dir="$(find_spec_dir "${1:-}")"
-if [ -z "$dir" ]; then
-  yellow "Không xác định được spec (branch không có dạng feat/NNN-... hoặc feature/NNN-...). Bỏ qua."
-  exit 0
-fi
+dir="$(resolve_spec_dir "${1:-}")"
 spec="$dir/spec.md"; plan="$dir/plan.md"
 errors=0
 err()  { red "  ✗ $*"; errors=$((errors+1)); }
 
-echo "Kiểm tra spec: ${dir#"$ROOT"/}"
+echo "Kiểm tra spec: ${dir#"$GF_HOME"/}"
 [ -f "$spec" ] || { red "  ✗ Thiếu spec.md"; exit 1; }
 
 s="$(read_status "$spec")"

@@ -2,12 +2,12 @@
 
 **Trạng thái:** draft
 **Tác giả:** <tên> · **Người duyệt:** <tên> · **Cập nhật:** YYYY-MM-DD
-**Branch:** `feature/NNN-ten-tinh-nang` · **Roadmap:** Phase X
+**Branch:** `feat/NNN-ten-tinh-nang` · **Roadmap:** Phase X
 **Liên quan:** <spec khác, ADR, ticket>
 
 > Spec trả lời **CÁI GÌ** và **TẠI SAO**. Chi tiết kỹ thuật để cho plan.md.
 > Trạng thái: `draft` → `in-review` → `approved` → `implemented` (hoặc `superseded`).
-> Chỉ đặt `approved` khi `bash sdd/scripts/check-ready.sh` pass. Nhãn `[SUY ĐOÁN]`, `[ĐỀ XUẤT]` phải được dev xác nhận rồi xóa trước đó.
+> Chỉ đặt `approved` khi `bash .gf/scripts/check-ready.sh <thư mục spec>` pass. Nhãn `[SUY ĐOÁN]`, `[ĐỀ XUẤT]` phải được dev xác nhận rồi xóa trước đó.
 
 ---
 
@@ -24,7 +24,7 @@
 - <...>
 
 ## 4. Phụ thuộc
-> Liệt kê **module**, không liệt kê file. Tên module khớp `sdd/config.sh`.
+> Liệt kê **module**, không liệt kê file. Tên module khớp `MODULE_GLOBS` trong `config.sh` của dự án.
 > Quan hệ (dùng đúng từ khóa — script CI đọc cột này):
 > `Chỉ đọc` · `Sửa nội bộ` · `Sửa hợp đồng` · `Mới` · `Bị ảnh hưởng`
 > Nhiều module cùng quan hệ: viết cách nhau dấu phẩy.
@@ -60,7 +60,7 @@
 
 ## 8. Tiêu chí nghiệm thu
 > Mỗi AC phải chuyển được thành ít nhất một test tự động. Có số liệu, mã lỗi, trạng thái cụ thể.
-> Không dùng từ mơ hồ trong Given/When/Then (danh sách `VAGUE_WORDS` trong `sdd/config.sh`).
+> Không dùng từ mơ hồ trong Given/When/Then (danh sách `VAGUE_WORDS` trong `config.sh` của dự án).
 > AC giao diện: nêu viewport, asset (đường dẫn file), layout (có mặt, thứ tự, chứa trong, vị trí tương đối). Không so sánh screenshot.
 
 **AC-1** (FR-1)

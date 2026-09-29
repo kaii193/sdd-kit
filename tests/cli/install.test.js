@@ -1,153 +1,170 @@
 import assert from 'node:assert/strict';
-import { readdirSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { appendFileSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import {
-  createProject,
-  installInto,
-  projectFileExists,
-  readManifest,
-  readProjectFile,
-  runCli,
-} from './helpers.js';
+import { validateTools } from '../../lib/installer.js';
+import { createSandbox, exists, install, readJson, readText, runCli, toPosix, writeText } from './helpers.js';
 
-test('installs sdd and gf, pulling sdd in as a dependency, and records a manifest', (t) => {
-  const project = createProject(t);
+test('installs skills and a kit copy into the Claude dir and scaffolds the gf home', (t) => {
+  const sandbox = createSandbox(t);
 
-  const result = installInto(project);
+  const result = install(sandbox);
 
   assert.equal(result.status, 0, result.stderr);
-  for (const file of ['AGENTS.md', 'CLAUDE.md', 'sdd/scripts/check-ready.sh', '.github/workflows/sdd-check.yml']) {
-    assert.ok(projectFileExists(project, file), `thiếu ${file}`);
+  for (const file of ['skills/gf-init/SKILL.md', 'skills/gf-spec/SKILL.md', 'gf/kit/bin/gf.js', 'gf/manifest.json']) {
+    assert.ok(exists(path.join(sandbox.claude, file)), `thiếu ~/.claude/${file}`);
   }
-  const manifest = readManifest(project);
-  assert.deepEqual(manifest.modules, ['sdd', 'gf']);
-  assert.equal(manifest.files['AGENTS.md'].owner, 'user');
-  assert.equal(manifest.files['sdd/scripts/lib.sh'].owner, 'kit');
+  for (const file of ['AGENTS.md', 'CLAUDE.md', '.gf/scripts/check-ready.sh', '.gf/templates/spec/spec.md', 'projects', '.claude/settings.json']) {
+    assert.ok(exists(path.join(sandbox.home, file)), `thiếu ${file} trong thư mục gốc`);
+  }
+  assert.deepEqual(readJson(path.join(sandbox.home, '.gf/manifest.json')).modules, ['sdd', 'gf']);
+  assert.deepEqual(readJson(path.join(sandbox.claude, 'gf/manifest.json')).homes, [toPosix(sandbox.home)]);
+});
+
+test('renders the absolute path of the installed CLI into the skills', (t) => {
+  const sandbox = createSandbox(t);
+
+  install(sandbox);
+
+  const skill = readText(path.join(sandbox.claude, 'skills/gf-init/SKILL.md'));
+  assert.ok(!skill.includes('{{'), 'còn placeholder chưa thay');
+  assert.ok(skill.includes(toPosix(path.join(sandbox.claude, 'gf/kit/bin/gf.js'))));
+});
+
+test('installs a kit copy that runs on its own', (t) => {
+  const sandbox = createSandbox(t);
+  install(sandbox);
+
+  const result = spawnSync(process.execPath, [path.join(sandbox.claude, 'gf/kit/bin/gf.js'), '--help'], { encoding: 'utf8' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /init-project/);
 });
 
 test('writes every shell script with LF line endings', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
-  installInto(project);
+  install(sandbox);
 
-  const scripts = readdirSync(path.join(project, 'sdd/scripts')).filter((name) => name.endsWith('.sh'));
+  const scriptsDir = path.join(sandbox.home, '.gf/scripts');
+  const scripts = readdirSync(scriptsDir).filter((name) => name.endsWith('.sh'));
   assert.ok(scripts.length > 0);
   for (const script of scripts) {
-    assert.ok(!readProjectFile(project, `sdd/scripts/${script}`).includes('\r'), `${script} còn CRLF`);
+    assert.ok(!readText(path.join(scriptsDir, script)).includes('\r'), `${script} còn CRLF`);
   }
 });
 
 test('installs without bash on PATH', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
   const result = runCli(
-    ['install', '--directory', project, '--modules', 'gf', '--tools', 'claude-code', '--yes'],
+    sandbox,
+    ['install', '--directory', sandbox.home, '--modules', 'gf', '--tools', 'claude-code', '--yes'],
     { onlyNodeOnPath: true },
   );
 
   assert.equal(result.status, 0, result.stderr);
-  assert.ok(projectFileExists(project, '.gf/manifest.json'));
+  assert.ok(exists(path.join(sandbox.home, '.gf/manifest.json')));
 });
 
 test('rejects --yes without --tools and names the missing option', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
-  const result = runCli(['install', '--directory', project, '--modules', 'gf', '--yes']);
+  const result = runCli(sandbox, ['install', '--directory', sandbox.home, '--modules', 'gf', '--yes']);
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Thiếu --tools/);
-  assert.ok(!projectFileExists(project, '.gf/manifest.json'));
+  assert.ok(!exists(path.join(sandbox.home, '.gf/manifest.json')));
 });
 
 test('prompts for missing values and installs after confirmation', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
-  const result = runCli(['install'], { input: `${project}\ngf\nclaude-code\ny\n` });
+  const result = runCli(sandbox, ['install'], { input: `${sandbox.home}\ngf\nclaude-code\ny\n` });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Thư mục dự án:/);
+  assert.match(result.stdout, /Thư mục gốc gf/);
   assert.match(result.stdout, /Tiếp tục cài\?/);
-  assert.ok(projectFileExists(project, '.gf/manifest.json'));
+  assert.ok(exists(path.join(sandbox.home, '.gf/manifest.json')));
 });
 
 test('writes nothing when the confirmation is declined', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
-  const result = runCli(['install', '--directory', project, '--modules', 'gf', '--tools', 'claude-code'], {
+  const result = runCli(sandbox, ['install', '--directory', sandbox.home, '--modules', 'gf', '--tools', 'claude-code'], {
     input: 'n\n',
   });
 
   assert.equal(result.status, 1);
-  assert.ok(!projectFileExists(project, 'AGENTS.md'));
-  assert.ok(!projectFileExists(project, '.gf/manifest.json'));
+  assert.ok(!exists(sandbox.home));
+  assert.ok(!exists(sandbox.claude));
 });
 
-test('rejects an unknown tool', (t) => {
-  const project = createProject(t);
+test('rejects tools that are no longer supported', (t) => {
+  const sandbox = createSandbox(t);
 
-  const result = installInto(project, { tools: 'claude-code,vim' });
-
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /Tool không hỗ trợ: vim/);
-});
-
-test('rejects gf without claude-code', (t) => {
-  const project = createProject(t);
-
-  const result = installInto(project, { tools: 'cursor' });
+  const result = install(sandbox, { tools: 'claude-code,cursor' });
 
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Module 'gf' cần tool: claude-code/);
+  assert.match(result.stderr, /Tool không hỗ trợ: cursor/);
 });
 
 test('rejects an unknown module', (t) => {
-  const project = createProject(t);
+  const sandbox = createSandbox(t);
 
-  const result = installInto(project, { modules: 'bmm' });
+  const result = install(sandbox, { modules: 'bmm' });
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Module không tồn tại: bmm/);
 });
 
-test('installs the cursor and copilot rule files for the sdd module', (t) => {
-  const project = createProject(t);
+test('requires every tool a module declares', () => {
+  const catalog = {
+    tools: ['claude-code', 'other'],
+    modules: new Map([['gf', { requiresTools: ['claude-code'] }]]),
+  };
 
-  const result = installInto(project, { modules: 'sdd', tools: 'cursor,github-copilot' });
-
-  assert.equal(result.status, 0, result.stderr);
-  assert.ok(projectFileExists(project, '.cursor/rules/sdd.mdc'));
-  assert.ok(projectFileExists(project, '.github/copilot-instructions.md'));
-  assert.ok(!projectFileExists(project, 'CLAUDE.md'));
+  assert.throws(() => validateTools(catalog, ['gf'], ['other']), /Module 'gf' cần tool: claude-code/);
 });
 
-test('keeps files that already exist in the project', (t) => {
-  const project = createProject(t);
-  writeFileSync(path.join(project, 'CLAUDE.md'), 'của tôi\n');
+test('keeps files that already exist in the gf home and does not track them', (t) => {
+  const sandbox = createSandbox(t);
+  mkdirSync(sandbox.home, { recursive: true });
+  writeText(path.join(sandbox.home, 'CLAUDE.md'), 'của tôi\n');
 
-  const result = installInto(project);
+  const result = install(sandbox);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(readProjectFile(project, 'CLAUDE.md'), 'của tôi\n');
+  assert.equal(readText(path.join(sandbox.home, 'CLAUDE.md')), 'của tôi\n');
   assert.match(result.stdout, /= CLAUDE\.md \(đã tồn tại, bỏ qua\)/);
-  assert.equal(readManifest(project).files['CLAUDE.md'], undefined);
+  assert.equal(readJson(path.join(sandbox.home, '.gf/manifest.json')).files['CLAUDE.md'], undefined);
 });
 
-test('skips the CI workflow with --no-ci', (t) => {
-  const project = createProject(t);
+test('refuses to install twice into the same gf home', (t) => {
+  const sandbox = createSandbox(t);
+  install(sandbox);
 
-  installInto(project, { extra: ['--no-ci'] });
-
-  assert.ok(!projectFileExists(project, '.github/workflows/sdd-check.yml'));
-  assert.ok(projectFileExists(project, '.github/pull_request_template.md'));
-});
-
-test('refuses to install twice and points to update', (t) => {
-  const project = createProject(t);
-  installInto(project);
-
-  const result = installInto(project);
+  const result = install(sandbox);
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Dùng lệnh update/);
+});
+
+test('shares one Claude dir between two gf homes without overwriting an edited skill', (t) => {
+  const sandbox = createSandbox(t);
+  install(sandbox);
+  const skillPath = path.join(sandbox.claude, 'skills/gf-spec/SKILL.md');
+  appendFileSync(skillPath, '\nGhi chú của tôi\n');
+  const secondHome = path.join(sandbox.root, 'gf-work-2');
+
+  const result = install(sandbox, { home: secondHome });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readText(skillPath), /Ghi chú của tôi/);
+  assert.ok(exists(`${skillPath}.gf-new`));
+  assert.deepEqual(readJson(path.join(sandbox.claude, 'gf/manifest.json')).homes, [
+    toPosix(sandbox.home),
+    toPosix(secondHome),
+  ]);
 });

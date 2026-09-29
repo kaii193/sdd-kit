@@ -2,27 +2,35 @@ if [ -z "${BASH_VERSINFO:-}" ] || [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
   echo "SDD scripts cần bash >= 4 (macOS: brew install bash). Bash hiện tại: ${BASH_VERSION:-không rõ}" >&2
   exit 2
 fi
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-source "$ROOT/sdd/config.sh"
+GF_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }
 yellow() { printf '\033[33m%s\033[0m\n' "$*"; }
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
 
-find_spec_dir() {
-  local arg="${1:-${SDD_SPEC:-}}"
-  if [ -n "$arg" ]; then
-    [ -d "$arg" ] && { echo "$arg"; return; }
-    [ -d "$ROOT/sdd/specs/$arg" ] && { echo "$ROOT/sdd/specs/$arg"; return; }
+resolve_spec_dir() {
+  local arg="${1:-}"
+  if [ -z "$arg" ]; then
+    echo "Thiếu thư mục spec (vd: projects/<dự-án>/specs/NNN-ten)" >&2
+    return 1
   fi
-  local branch="${SDD_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"
-  local num
-  num="$(printf '%s' "$branch" | sed -nE 's#^(.*/)?(feat|feature)/([0-9]{3})-.*#\3#p')"
-  [ -z "$num" ] && return 0
-  local d
-  for d in "$ROOT"/sdd/specs/"$num"-*; do
-    [ -d "$d" ] && { echo "$d"; return; }
-  done
+  if [ -d "$arg" ]; then (cd "$arg" && pwd); return; fi
+  if [ -d "$GF_HOME/$arg" ]; then (cd "$GF_HOME/$arg" && pwd); return; fi
+  echo "Không tìm thấy thư mục spec: $arg" >&2
+  return 1
+}
+
+project_dir_of() {
+  (cd "$1/../.." && pwd)
+}
+
+load_project_config() {
+  local config="$1/config.sh"
+  if [ ! -f "$config" ]; then
+    echo "Thiếu $config — thư mục spec phải nằm trong projects/<dự-án>/specs/" >&2
+    exit 1
+  fi
+  source "$config"
 }
 
 read_status() {

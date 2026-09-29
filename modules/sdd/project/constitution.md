@@ -31,7 +31,7 @@
 <Mô tả hoặc sơ đồ Mermaid các thành phần chính.>
 
 ### 3.2 Danh sách module
-> Tên module phải khớp với cách `sdd/config.sh` nhận diện (tên thư mục).
+> Tên module phải khớp với cách `MODULE_GLOBS` trong `config.sh` cùng thư mục nhận diện (tên thư mục).
 
 | Module | Trách nhiệm | Cửa vào công khai | Được phụ thuộc vào | Chủ sở hữu |
 |---|---|---|---|---|
@@ -48,18 +48,28 @@
 
 ### 3.4 Công cụ ép ranh giới
 - Kiểm tra import giữa module: <vd: dependency-cruiser / eslint-plugin-boundaries / ArchUnit / import-linter / chưa có>
-- Kiểm tra phạm vi thay đổi theo spec: `sdd/scripts/check-scope.sh`
+- Kiểm tra phạm vi thay đổi theo spec: `.gf/scripts/check-scope.sh`
 - Phát hiện code trùng: <vd: jscpd / chưa có>
 
 ## 4. Nguyên tắc
 ### 4.1 Code
-- <Quy ước chính. Chi tiết pattern và file mẫu: xem `sdd/patterns.md`.>
+- <Quy ước chính. Chi tiết pattern và file mẫu: xem `patterns.md` cùng thư mục.>
 ### 4.2 Test
 - <vd: Mỗi AC có test tự động; mỗi module có contract test cho cửa vào công khai>
 ### 4.3 Bảo mật & dữ liệu
 - <vd: không log dữ liệu cá nhân; secret qua biến môi trường>
 ### 4.4 Hiệu năng & vận hành
 - <vd: API p95 < 300ms; tính năng mới có log/metric>
+
+### 4.5 Quyết định mặc định cho agent
+> Bắt buộc điền. Khi chạy tự động, agent không hỏi ai: gặp chỗ spec không nói tới thì theo các quyết định này, ghi giả định vào log rồi làm tiếp.
+
+- <vd: Ưu tiên dùng lại code có sẵn trong patterns.md; không viết lại>
+- <vd: Thiếu thông số UI → theo component gần nhất trong patterns.md>
+- <vd: Dependency mới: được thêm nếu là thư viện phổ biến, ghi lý do vào log / không được thêm>
+- <vd: Mã lỗi mặc định: HTTP 422 + code dạng UPPER_SNAKE_CASE>
+- <vd: Ngôn ngữ thông báo cho người dùng: tiếng Việt>
+- <vd: Hai cách làm đều đúng spec → chọn cách ít file bị sửa hơn>
 
 ## 5. Bối cảnh Brownfield (bỏ qua nếu greenfield)
 - **Vùng không động vào:** <module/thư mục>

@@ -1,8 +1,7 @@
 {
   "name": "gf",
-  "description": "Bộ agent gf cho Claude Code: skill, agent, script điều phối",
+  "description": "Bộ agent gf cho Claude Code: skill và agent cài ở cấp user",
   "requires": ["sdd"],
   "requiresTools": ["claude-code"],
-  "userOwned": [],
-  "ciPaths": []
+  "userOwned": []
 }

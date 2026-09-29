@@ -41,7 +41,7 @@
 **Chất lượng code**
 - [ ] Không có hàm/component trùng với thứ đã có (đối chiếu plan mục 3)
 - [ ] Code mới theo đúng file mẫu (plan mục 4)
-- [ ] Lỗi pattern lặp lại → đã ghi vào `sdd/patterns.md` mục 4
+- [ ] Lỗi pattern lặp lại → đã ghi vào `patterns.md` của dự án, mục 4
 
 **Tài liệu**
 - [ ] Spec, plan khớp với code cuối cùng; trạng thái spec → `implemented`

@@ -1,58 +1,61 @@
 # SDD Kit — Cài đặt
 
-Bộ công cụ Spec-Driven Development cài được vào mọi dự án (mọi ngôn ngữ, greenfield hoặc brownfield).
-File này chỉ hướng dẫn **cài kit**; sau khi cài, hướng dẫn sử dụng nằm ở `sdd/GUIDE.md` trong dự án.
+File này chỉ hướng dẫn **cài kit**. Sau khi cài, hướng dẫn sử dụng nằm ở `GUIDE.md` trong thư mục gốc gf.
 
 ## Yêu cầu
 - Node ≥ 18 để chạy bộ cài. Bước cài không cần bash.
-- Git; bash ≥ 4 để chạy các script trong `sdd/scripts/` (Windows: Git Bash; macOS: `brew install bash`)
-- CI mặc định: GitHub Actions (CI khác: xem GUIDE mục 8.3)
+- Git; bash ≥ 4 để chạy các script trong `.gf/scripts/` (Windows: Git Bash; macOS: `brew install bash`).
+- Claude Code.
 
-## Cài
+## Cài (một lần cho mỗi máy)
 ```bash
-npx github:kaii193/sdd-kit install --directory /duong/dan/du-an --modules gf --tools claude-code --yes
+npx github:kaii193/sdd-kit install --directory D:/gf-work --modules gf --tools claude-code --yes
 ```
 Không truyền `--yes` thì CLI hỏi từng tham số còn thiếu, liệt kê file sẽ ghi, rồi hỏi xác nhận.
 
+Kết quả:
+
+| Nơi | Nội dung |
+|---|---|
+| `~/.claude/skills/gf-init`, `gf-spec` | Skill dùng được trong mọi phiên Claude Code (thư mục thật lấy theo `CLAUDE_CONFIG_DIR` nếu có đặt) |
+| `~/.claude/gf/kit/` | Bản sao CLI mà các skill gọi tới |
+| `~/.claude/gf/manifest.json` | Version kit, danh sách thư mục gốc, hash từng file đã cài |
+| `D:/gf-work/` (thư mục gốc) | `AGENTS.md`, `CLAUDE.md`, `GUIDE.md`, `.gf/scripts/`, `.gf/templates/`, `projects/`, `.claude/settings.json`, `.gf/manifest.json` |
+
 | Tham số | Giá trị |
 |---|---|
-| `--modules` | `sdd`: lõi SDD · `gf`: bộ agent cho Claude Code, tự kéo theo `sdd` |
-| `--tools` | `claude-code` → `CLAUDE.md` · `cursor` → `.cursor/rules/sdd.mdc` · `github-copilot` → `.github/copilot-instructions.md`. Nhiều tool thì cách nhau dấu phẩy. Module `gf` bắt buộc có `claude-code` |
-| `--no-ci` | Không cài `.github/workflows/` |
+| `--directory` | Thư mục gốc gf; chưa có thì được tạo |
+| `--modules` | `sdd`: lõi · `gf`: bộ agent cho Claude Code, tự kéo theo `sdd` |
+| `--tools` | `claude-code` |
 
-Bộ cài **không ghi đè** file có sẵn, kể cả `README.md` của dự án (kit không đụng tới file này). Danh sách file đã cài được ghi vào `.gf/manifest.json`; nên commit file này.
+Bộ cài **không ghi đè** file đã có sẵn.
+
+## Link một dự án code
+Mở Claude Code trong thư mục gốc, gõ `/gf-init`. Skill sẽ hỏi tên dự án và đường dẫn repo code, rồi gọi:
+```bash
+node ~/.claude/gf/kit/bin/gf.js init-project --directory D:/gf-work --name shop-api --project D:/code/shop-api
+```
+Lệnh tạo `projects/shop-api/` (gồm `config.sh`, `constitution.md`, `patterns.md`, `decisions/`, `specs/`) và thêm repo vào `additionalDirectories` trong `.claude/settings.json`. Repo code **không nhận file nào** từ kit.
 
 ## Cập nhật và kiểm tra
 ```bash
-npx github:kaii193/sdd-kit update --directory /duong/dan/du-an
-npx github:kaii193/sdd-kit doctor --directory /duong/dan/du-an [--autonomous]
+npx github:kaii193/sdd-kit update --directory D:/gf-work
+npx github:kaii193/sdd-kit doctor --directory D:/gf-work [--autonomous]
 ```
 
-`update` chia file làm hai loại:
+`update` xử lý từng loại file như sau:
 
 | Loại | Ví dụ | Khi `update` |
 |---|---|---|
-| Của bạn | `AGENTS.md`, `CLAUDE.md`, `sdd/config.sh`, `sdd/constitution.md`, `sdd/patterns.md`, `.github/pull_request_template.md` | Không bao giờ đụng |
-| Của kit | `sdd/scripts/*`, template spec, workflow CI | Nâng cấp nếu bạn chưa sửa. Đã sửa thì giữ nguyên, bản mới ghi vào `*.gf-new` để bạn tự so |
+| Của bạn | `CLAUDE.md` của thư mục gốc, `.claude/settings.json`, mọi file trong `projects/` | Không bao giờ đụng |
+| Của kit | Skill, `.gf/scripts/*`, `.gf/templates/*`, `AGENTS.md`, `GUIDE.md`, bản sao CLI | Nâng cấp nếu bạn chưa sửa. Đã sửa thì giữ nguyên, bản mới ghi vào `*.gf-new` để bạn tự so |
 
-`doctor` kiểm: git repo, Node, bash, đã cài kit, AGENTS.md mục 7 đã điền, `MODULE_GLOBS` khớp thư mục. Thêm `--autonomous` thì kiểm luôn biến môi trường Telegram và việc đăng nhập `gh`.
-
-## Những gì được cài
-| Đường dẫn | Vai trò |
-|---|---|
-| `AGENTS.md` | Luật cho AI agent |
-| `CLAUDE.md`, `.cursor/rules/sdd.mdc`, `.github/copilot-instructions.md` | File nạp luật theo `--tools` |
-| `.gf/manifest.json` | Version kit, module, tool và hash của từng file đã cài |
-| `.github/workflows/sdd-check.yml` | CI chạy check-spec và check-scope |
-| `.github/pull_request_template.md` | Checklist Gate G3 |
-| `.github/CODEOWNERS.example` | Mẫu chủ sở hữu module |
-| `sdd/GUIDE.md` | Hướng dẫn triển khai cho người |
-| `sdd/config.sh` | Cấu hình module, nhánh chính |
-| `sdd/constitution.md` | Hiến pháp dự án |
-| `sdd/patterns.md` | File mẫu và code dùng chung |
-| `sdd/decisions/adr-template.md` | Mẫu ADR |
-| `sdd/specs/_template/` | Mẫu spec, plan, tasks |
-| `sdd/scripts/` | `new-spec.sh`, `check-ready.sh`, `check-spec.sh`, `check-scope.sh`, `lib.sh` |
+`doctor` kiểm:
+- Node, bash, thư mục gốc, skill và bản sao CLI, `settings.json` hợp lệ.
+- Với **từng dự án đã link**: repo code tồn tại và là git repo; `TEST_COMMAND`, `LINT_COMMAND` đã điền; `MODULE_GLOBS` khớp thư mục; mục 4.5 "Quyết định mặc định cho agent" đã điền; repo có trong `additionalDirectories`.
+- Thêm `--autonomous` thì kiểm luôn biến môi trường Telegram và việc đăng nhập `gh`.
 
 ## Gỡ
-Xóa `AGENTS.md`, file nạp luật, `sdd/`, `.gf/`, `.github/workflows/sdd-check.yml`, `.github/pull_request_template.md`.
+- Xóa thư mục gốc.
+- Xóa `~/.claude/skills/gf-init`, `~/.claude/skills/gf-spec`, `~/.claude/gf/`.
+- Repo code không cần gỡ gì.

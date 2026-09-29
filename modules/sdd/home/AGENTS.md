@@ -1,12 +1,12 @@
 # AGENTS.md — Luật làm việc cho AI Agent
 
-> Đọc ở đầu MỌI phiên. Hướng dẫn cho người: `sdd/GUIDE.md` (agent không cần đọc trừ khi được yêu cầu).
+> Đọc ở đầu MỌI phiên. Hướng dẫn cho người: `GUIDE.md` (agent không cần đọc trừ khi được yêu cầu).
 
 ## 1. Thứ tự đọc ngữ cảnh
-1. `sdd/constitution.md` — sứ mệnh, kiến trúc, ranh giới module, nguyên tắc
-2. `sdd/patterns.md` — file mẫu cần làm theo, tiện ích dùng chung
-3. ADR liên quan trong `sdd/decisions/`
-4. Tính năng hiện tại: `sdd/specs/NNN-*/spec.md` → `plan.md` → `tasks.md`
+1. `projects/<dự-án>/constitution.md` — sứ mệnh, kiến trúc, ranh giới module, nguyên tắc
+2. `projects/<dự-án>/patterns.md` — file mẫu cần làm theo, tiện ích dùng chung
+3. ADR liên quan trong `projects/<dự-án>/decisions/`
+4. Tính năng hiện tại: `projects/<dự-án>/specs/NNN-*/spec.md` → `plan.md` → `tasks.md`
 5. Interface công khai của các module trong mục **Phụ thuộc** của spec
 
 ## 2. Luật về phạm vi
@@ -18,8 +18,8 @@
 - Gặp điểm mơ hồ → hỏi lại, ghi vào **Câu hỏi mở**. KHÔNG tự đoán.
 
 ## 3. Luật về tái sử dụng & pattern
-- TRƯỚC KHI tạo hàm, component, hook, service, type mới: tìm trong codebase và `sdd/patterns.md` xem đã có cái tương tự chưa. Có → dùng lại. Không dùng được → ghi lý do vào mục **Tái sử dụng** của plan.
-- Viết code mới theo đúng file mẫu trong `sdd/patterns.md`, không tự nghĩ cấu trúc riêng.
+- TRƯỚC KHI tạo hàm, component, hook, service, type mới: tìm trong codebase và `patterns.md` của dự án xem đã có cái tương tự chưa. Có → dùng lại. Không dùng được → ghi lý do vào mục **Tái sử dụng** của plan.
+- Viết code mới theo đúng file mẫu trong `patterns.md` của dự án, không tự nghĩ cấu trúc riêng.
 - KHÔNG import vào bên trong module khác; chỉ dùng interface công khai của nó.
 - KHÔNG thêm dependency mới nếu constitution không cho phép hoặc chưa được hỏi ý.
 
@@ -33,15 +33,9 @@
 
 ## 6. Khi làm task
 - Làm từng task theo thứ tự trong `tasks.md`. Hết giai đoạn thì DỪNG chờ review.
-- Xong task: chạy test liên quan → tick checkbox → commit `[NNN-Tx] mô tả`.
+- Xong task: chạy test liên quan → tick checkbox → commit theo Conventional Commits, chỉ dòng tiêu đề, ví dụ `feat(pricing): apply promo code`.
 - Phát hiện spec sai/thiếu → DỪNG, đề xuất sửa spec (ghi Lịch sử thay đổi), chờ duyệt.
-- Trước khi báo xong: chạy `bash sdd/scripts/check-scope.sh` và sửa mọi lỗi.
+- Trước khi báo xong: chạy `bash .gf/scripts/check-scope.sh <thư mục spec>` và sửa mọi lỗi.
 
 ## 7. Lệnh dự án
-> Bắt buộc điền. Agent dùng các lệnh này để tự kiểm tra.
-
-- Cài đặt: `...`
-- Chạy toàn bộ test: `...`
-- Chạy test một module: `...`
-- Lint / type check: `...`
-- Chạy local: `...`
+Mỗi dự án khai lệnh trong `projects/<dự-án>/config.sh`: `INSTALL_COMMAND`, `TEST_COMMAND`, `TEST_MODULE_COMMAND`, `LINT_COMMAND`, `E2E_COMMAND`, `RUN_COMMAND`. Chạy các lệnh này trong repo code (`PROJECT_PATH`) hoặc trong worktree của spec.

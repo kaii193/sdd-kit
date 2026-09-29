@@ -1,17 +1,7 @@
 {
   "name": "sdd",
-  "description": "Lõi SDD: AGENTS.md, template spec/plan/tasks, script kiểm tra, CI",
+  "description": "Lõi SDD: luật cho agent, template spec/plan/tasks, script kiểm tra, template dự án",
   "requires": [],
   "requiresTools": [],
-  "userOwned": [
-    "AGENTS.md",
-    "CLAUDE.md",
-    ".cursor/rules/sdd.mdc",
-    ".github/copilot-instructions.md",
-    ".github/pull_request_template.md",
-    "sdd/config.sh",
-    "sdd/constitution.md",
-    "sdd/patterns.md"
-  ],
-  "ciPaths": [".github/workflows/"]
+  "userOwned": ["CLAUDE.md"]
 }

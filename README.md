@@ -11,10 +11,11 @@ Bộ công cụ Spec-Driven Development cài được vào mọi dự án, mọi
 ## Thành phần
 | Thư mục | Nội dung |
 |---|---|
-| `modules/sdd/files/` | File lõi được cài vào dự án: `AGENTS.md`, `sdd/`, `.github/` |
-| `modules/sdd/tools/` | File nạp luật cho Claude Code, Cursor, Copilot |
-| `modules/gf/` | Bộ agent gf cho Claude Code (đang xây) |
-| `bin/`, `lib/` | Bộ cài `npx github:kaii193/sdd-kit` (install, update, doctor) |
+| `modules/sdd/home/` | File cài vào thư mục gốc gf: `AGENTS.md`, `GUIDE.md`, `.gf/scripts/`, `.gf/templates/` |
+| `modules/sdd/project/` | Template cho mỗi dự án được link (`config.sh`, `constitution.md`, `patterns.md`) |
+| `modules/sdd/tools/claude-code/` | `CLAUDE.md` của thư mục gốc |
+| `modules/gf/claude/` | Skill cài vào `~/.claude` (`gf-init`, `gf-spec`; `gf-implement` đang xây) |
+| `bin/`, `lib/` | Bộ cài `npx github:kaii193/sdd-kit` (install, update, doctor, init-project) |
 | `tests/` | Test của bộ cài và của script kiểm tra spec |
 | `docs/model.md` | Sơ đồ cấu trúc và quy trình |
 | `docs/decisions.md` | Các quyết định thiết kế và lý do |

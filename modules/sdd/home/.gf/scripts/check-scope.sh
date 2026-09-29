@@ -2,17 +2,17 @@
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
-dir="$(find_spec_dir "${1:-}")"
-if [ -z "$dir" ]; then
-  yellow "Không xác định được spec (branch không có dạng feat/NNN-... hoặc feature/NNN-...). Bỏ qua."
-  exit 0
-fi
+dir="$(resolve_spec_dir "${1:-}")"
+load_project_config "$(project_dir_of "$dir")"
 spec="$dir/spec.md"
 [ -f "$spec" ] || { red "Thiếu $spec"; exit 1; }
 
+code_dir="${GF_CODE_DIR:-$PROJECT_PATH}"
+git -C "$code_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1 || { red "Không phải git repo: $code_dir"; exit 1; }
+
 base="${SDD_BASE:-}"
 if [ -z "$base" ]; then
-  if git rev-parse --verify -q "origin/$BASE_BRANCH" >/dev/null; then base="origin/$BASE_BRANCH"; else base="$BASE_BRANCH"; fi
+  if git -C "$code_dir" rev-parse --verify -q "origin/$BASE_BRANCH" >/dev/null; then base="origin/$BASE_BRANCH"; else base="$BASE_BRANCH"; fi
 fi
 
 declare -A REL=()
@@ -34,13 +34,13 @@ while IFS= read -r f; do
   if path_in "$f" "${SHARED_PATHS[@]}"; then shared+=("$f"); continue; fi
   m="$(module_of "$f")"
   if [ -n "$m" ]; then TOUCHED["$m"]+="$f"$'\n'; else outside+=("$f"); fi
-done < <(git diff --name-only "$base"...HEAD)
+done < <(git -C "$code_dir" diff --name-only "$base"...HEAD)
 
 errors=0; warns=0
 err()  { red "  ✗ $*"; errors=$((errors+1)); }
 warn() { yellow "  ! $*"; warns=$((warns+1)); }
 
-echo "Kiểm tra phạm vi: ${dir#"$ROOT"/}  (so với $base)"
+echo "Kiểm tra phạm vi: ${dir#"$GF_HOME"/}  (repo $code_dir, so với $base)"
 k1="${!REL[*]}"; k2="${!TOUCHED[*]}"
 echo "  Khai báo: ${k1:-(trống)}"
 echo "  Bị sửa:   ${k2:-(không có)}"
@@ -65,7 +65,7 @@ for m in "${!REL[@]}"; do
 done
 
 if [ "${#outside[@]}" -gt 0 ]; then
-  warn "File không thuộc module nào (kiểm tra MODULE_GLOBS trong sdd/config.sh):"
+  warn "File không thuộc module nào (kiểm tra MODULE_GLOBS trong config.sh của dự án):"
   printf '        %s\n' "${outside[@]}"
 fi
 if [ "${#shared[@]}" -gt 0 ]; then

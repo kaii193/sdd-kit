@@ -5,14 +5,11 @@ source "$(dirname "$0")/lib.sh"
 RELATION_KEYWORDS=("Chỉ đọc" "Sửa nội bộ" "Sửa hợp đồng" "Mới" "Bị ảnh hưởng")
 UNFILLED_BULLET='- <...>'
 
-dir="$(find_spec_dir "${1:-}")"
-if [ -z "$dir" ]; then
-  yellow "Không xác định được spec (branch không có dạng feat/NNN-... hoặc feature/NNN-...). Bỏ qua."
-  exit 0
-fi
+dir="$(resolve_spec_dir "${1:-}")"
+load_project_config "$(project_dir_of "$dir")"
 spec="$dir/spec.md"
 [ -f "$spec" ] || { red "  ✗ Thiếu $spec"; exit 1; }
-declare -p VAGUE_WORDS >/dev/null 2>&1 || { red "  ✗ sdd/config.sh thiếu VAGUE_WORDS"; exit 1; }
+declare -p VAGUE_WORDS >/dev/null 2>&1 || { red "  ✗ config.sh của dự án thiếu VAGUE_WORDS"; exit 1; }
 
 spec_text="$(sed 's/\r$//' "$spec")"
 errors=0; warns=0
@@ -155,7 +152,7 @@ check_title() {
   fi
 }
 
-echo "Kiểm tra sẵn sàng: ${dir#"$ROOT"/}"
+echo "Kiểm tra sẵn sàng: ${dir#"$GF_HOME"/}"
 ac_report="$(acceptance_criteria_report)"
 check_open_questions
 check_dependencies

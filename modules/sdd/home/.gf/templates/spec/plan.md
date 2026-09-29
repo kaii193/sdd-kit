@@ -18,7 +18,7 @@
 - [ ] Không thêm dependency ngoài quy định (hoặc đã xin phép: <...>)
 
 ## 3. Tái sử dụng
-> Agent PHẢI tìm trong codebase và `sdd/patterns.md` trước khi điền mục này.
+> Agent PHẢI tìm trong codebase và `patterns.md` của dự án trước khi điền mục này.
 
 ### 3.1 Dùng lại
 | Thứ có sẵn | Vị trí | Dùng để |
@@ -33,13 +33,13 @@
 ## 4. Pattern áp dụng
 | Phần việc | Làm theo file mẫu |
 |---|---|
-| | <từ sdd/patterns.md> |
+| | <từ patterns.md của dự án> |
 
 ## 5. Thay đổi hợp đồng (bỏ qua nếu không có `Sửa hợp đồng`)
 - **Hợp đồng:** <type/API/schema nào, ở đâu>
 - **Kiểu thay đổi:** ☐ Không phá vỡ (thêm trường tùy chọn…) ☐ Phá vỡ → expand–contract
 - **Bên đang dùng bị ảnh hưởng:** <module + test sẽ chạy lại>
-- **PR riêng:** `feature/NNN-contract-...` · **Chủ module duyệt:** @<tên> · **ADR:** <nếu có>
+- **PR riêng:** `feat/NNN-contract-...` · **Chủ module duyệt:** @<tên> · **ADR:** <nếu có>
 
 ## 6. File bị ảnh hưởng
 | File | Thêm/Sửa/Xóa | Mô tả |
