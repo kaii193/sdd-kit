@@ -1,4 +1,4 @@
-# Hướng dẫn triển khai SDD (Spec-Driven Development)
+# Hướng dẫn gf-autopilot (Spec-Driven Development với bộ agent)
 
 > Dành cho **người** trong team. AI agent đọc `AGENTS.md`.
 > Không thay thế `README.md` của dự án (cài đặt, cấu hình, chạy dự án vẫn ở README).

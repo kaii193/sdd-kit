@@ -1,4 +1,4 @@
-# SDD Kit — Cài đặt
+# gf-autopilot — Cài đặt
 
 File này chỉ hướng dẫn **cài kit**. Sau khi cài, hướng dẫn sử dụng nằm ở `GUIDE.md` trong thư mục gốc gf.
 

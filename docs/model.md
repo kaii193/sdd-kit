@@ -1,4 +1,4 @@
-# Mô hình gf
+# Mô hình gf-autopilot
 
 ## Cấu trúc ba tầng
 

@@ -1,7 +1,7 @@
 {
-  "name": "sdd-kit",
+  "name": "gf-autopilot",
   "version": "0.2.0",
-  "description": "Spec-Driven Development kit và bộ agent gf cho Claude Code",
+  "description": "gf-autopilot: dev viết spec, bộ agent Claude Code tự triển khai, kiểm chứng và báo cáo",
   "type": "module",
   "bin": {
     "gf": "bin/gf.js"
