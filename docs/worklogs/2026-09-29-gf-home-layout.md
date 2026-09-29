@@ -1,6 +1,6 @@
 # Cấu trúc thư mục gốc gf + dự án link (GĐ 2b)
 
-Ngày: 2026-09-29 · Branch: `feat/gf-home-layout` (xếp chồng lên `feat/npx-installer`) · Status: **PARTIAL** (C2b.1 mới kiểm bằng test, chưa kiểm bằng `npx github:` thật trên branch này; cần push)
+Ngày: 2026-09-29 · Branch: `feat/gf-home-layout` (xếp chồng lên `feat/npx-installer`) · Status: **DONE**
 
 ## Goal
 Chuyển kit sang cấu trúc đã chốt:
@@ -9,7 +9,7 @@ Chuyển kit sang cấu trúc đã chốt:
 - Repo code không nhận file nào từ kit.
 
 ## Success criteria
-- [~] **C2b.1** `install --directory <gốc>` cài skill và bản sao CLI vào `~/.claude` (test dùng `CLAUDE_CONFIG_DIR`), tạo thư mục gốc, có manifest ở cả hai nơi. Đã kiểm bằng test; `npx github:` chưa chạy.
+- [x] **C2b.1** `install --directory <gốc>` cài skill và bản sao CLI vào `~/.claude` (test dùng `CLAUDE_CONFIG_DIR`), tạo thư mục gốc, có manifest ở cả hai nơi. Đã kiểm bằng test và bằng `npx github:kaii193/sdd-kit#feat/gf-home-layout` thật.
 - [x] **C2b.2** `init-project`: từ chối đường dẫn không phải git repo, tên sai, tên trùng, repo đã link, ký tự nguy hiểm; tạo `projects/<tên>/` từ template; thêm vào `additionalDirectories` mà giữ nguyên các cài đặt khác.
 - [x] **C2b.3** `check-ready`, `check-spec`, `check-scope`, `new-spec` chạy với spec trong `projects/<tên>/specs/` và code ở repo đã link (hoặc ở `GF_CODE_DIR`). Toàn bộ các case R1–R11 của GĐ 1 chạy lại vẫn pass.
 - [x] **C2b.4** `update` giữ quy tắc sở hữu cho cả `~/.claude` lẫn thư mục gốc. File trong `projects/` không bao giờ bị đụng.
@@ -132,7 +132,7 @@ MUTANT đọc settings sau khi ghi file → ℹ fail 2
 Chạy thử bằng tay từ đầu tới cuối (install → init-project → new-spec → check-ready → doctor): 43 file được ghi; skill chứa đường dẫn CLI tuyệt đối; `config.sh` có `PROJECT_PATH` dạng `C:/…`; `settings.json` có repo trong `additionalDirectories`; `doctor` chỉ báo ✗ hai mục đúng mong đợi (lệnh chưa điền, mục 4.5 chưa điền).
 
 Kết luận từng tiêu chí:
-- **C2b.1** PARTIAL: ba test `installs skills…`, `renders…`, `installs a kit copy that runs on its own` pass. Chưa chạy `npx github:`.
+- **C2b.1** PASS: ba test `installs skills…`, `renders…`, `installs a kit copy that runs on its own` pass. Cài bằng `npx github:` thật (với `CLAUDE_CONFIG_DIR` trỏ vào thư mục tạm, không đụng `~/.claude` thật): skill `gf-init`, `gf-spec` được cài; `init-project` chạy qua bản CLI đã cài; `doctor` chỉ báo ✗ đúng hai mục một dự án vừa link còn thiếu.
 - **C2b.2** PASS: chín test `init-project`.
 - **C2b.3** PASS: 25/25 case bash, gồm `scope-uses-gf-code-dir`.
 - **C2b.4** PASS: bảy test `update`.
@@ -151,7 +151,6 @@ Kết luận từng tiêu chí:
 Vượt mục tiêu 400 dòng. Đây là một lần đổi cấu trúc trọn vẹn: script, bộ cài và tài liệu phải đổi cùng lúc thì kit mới dùng được. Tách nhỏ hơn thì PR ở giữa sẽ để kit trong trạng thái hỏng.
 
 ## Not done / follow-ups
-- Chạy `npx github:kaii193/sdd-kit#feat/gf-home-layout install …` thật sau khi push.
 - GĐ 3: skill `gf-implement`, luật hành vi tự động trong `AGENTS.md`, mục Tài nguyên và Môi trường chạy thử trong template (R12, R13).
 - `GUIDE.md` cần viết lại cho luồng agent (GĐ 7).
 - `doctor` gọi `bash` theo PATH; WSL bash có thể đứng trước Git Bash (còn từ GĐ 2).
