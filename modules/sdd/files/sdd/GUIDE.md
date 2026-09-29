@@ -36,7 +36,7 @@ module có ranh giới rõ và cửa vào công khai · hợp đồng viết b�
 
 ## 2. Cài đặt & cấu hình lần đầu
 
-Kit đã được cài bằng `install.sh` (xem `INSTALL.md` của kit). Việc cần làm tiếp:
+Kit đã được cài bằng `npx github:kaii193/sdd-kit install` (xem `INSTALL.md` của kit). Việc cần làm tiếp, xong thì chạy `npx github:kaii193/sdd-kit doctor --directory .` để kiểm tra:
 
 ### 2.1 Cấu hình module — `sdd/config.sh`
 Khai báo cách nhận diện module để `check-scope.sh` biết file nào thuộc module nào.
@@ -54,7 +54,7 @@ Bắt buộc. Agent dùng để tự chạy test, lint trước khi báo xong.
 ### 2.3 Công cụ AI
 | Công cụ | Cách nạp luật |
 |---|---|
-| Claude Code | `CLAUDE.md` chứa `@AGENTS.md` (install `--tool claude`) |
+| Claude Code | `CLAUDE.md` chứa `@AGENTS.md` (install `--tools claude-code`) |
 | Cursor | `.cursor/rules/sdd.mdc` với `alwaysApply: true` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 | Khác | Nhiều agent tự đọc `AGENTS.md`; nếu không, dán vào custom instructions |

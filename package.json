@@ -1,0 +1,22 @@
+{
+  "name": "sdd-kit",
+  "version": "0.2.0",
+  "description": "Spec-Driven Development kit và bộ agent gf cho Claude Code",
+  "type": "module",
+  "bin": {
+    "gf": "bin/gf.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "modules"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test \"tests/cli/*.test.js\" && bash tests/check-ready/run.sh"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

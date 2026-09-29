@@ -8,7 +8,7 @@ BRANCH_PROBE="042-branch-probe"
 
 workspace="$(mktemp -d)"
 trap 'rm -rf "$workspace"' EXIT
-cp -r "$KIT/template/sdd" "$workspace/sdd"
+cp -r "$KIT/modules/sdd/files/sdd" "$workspace/sdd"
 
 passed=0; failed=0
 pass() { printf 'PASS  %s\n' "$1"; passed=$((passed+1)); }
