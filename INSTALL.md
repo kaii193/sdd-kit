@@ -17,10 +17,11 @@ Kết quả:
 
 | Nơi | Nội dung |
 |---|---|
-| `~/.claude/skills/gf-init`, `gf-spec` | Skill dùng được trong mọi phiên Claude Code (thư mục thật lấy theo `CLAUDE_CONFIG_DIR` nếu có đặt) |
+| `~/.claude/skills/gf-init`, `gf-spec`, `gf-implement` | Skill dùng được trong mọi phiên Claude Code (thư mục thật lấy theo `CLAUDE_CONFIG_DIR` nếu có đặt) |
+| `~/.claude/agents/gf-pm`, `gf-coder`, `gf-qc`, `gf-reviewer` | Bộ agent triển khai |
 | `~/.claude/gf/kit/` | Bản sao CLI mà các skill gọi tới |
 | `~/.claude/gf/manifest.json` | Version kit, danh sách thư mục gốc, hash từng file đã cài |
-| `D:/gf-work/` (thư mục gốc) | `AGENTS.md`, `CLAUDE.md`, `GUIDE.md`, `.gf/scripts/`, `.gf/templates/`, `projects/`, `.claude/settings.json`, `.gf/manifest.json` |
+| `D:/gf-work/` (thư mục gốc) | `AGENTS.md`, `CLAUDE.md`, `GUIDE.md`, `runner.md`, `.gf/scripts/`, `.gf/templates/`, `projects/`, `.claude/settings.json`, `.gf/manifest.json` |
 
 | Tham số | Giá trị |
 |---|---|
@@ -36,6 +37,22 @@ Mở Claude Code trong thư mục gốc, gõ `/gf-init`. Skill sẽ hỏi tên d
 node ~/.claude/gf/kit/bin/gf.js init-project --directory D:/gf-work --name shop-api --project D:/code/shop-api
 ```
 Lệnh tạo `projects/shop-api/` (gồm `config.sh`, `constitution.md`, `patterns.md`, `decisions/`, `specs/`) và thêm repo vào `additionalDirectories` trong `.claude/settings.json`. Repo code **không nhận file nào** từ kit.
+
+## Chạy độc lập mỗi giờ (tùy chọn)
+1. Đặt biến môi trường `TELEGRAM_BOT_TOKEN` và `TELEGRAM_CHAT_ID` cho tài khoản chạy Claude Desktop.
+2. Làm theo phần đầu của `runner.md` trong thư mục gốc để tạo tác vụ Routines → Local: trỏ vào thư mục gốc, mỗi 1 giờ, chế độ `auto`, **không tích ô worktree**.
+3. Mở Claude trong thư mục gốc một lần và chấp nhận hộp thoại tin cậy. `additionalDirectories` chỉ có hiệu lực sau bước này; mỗi lần `/gf-init` thêm dự án mới thì làm lại bước này.
+4. Kiểm tra: `npx github:kaii193/sdd-kit doctor --directory D:/gf-work --autonomous`.
+
+Mỗi giờ runner chạy `run scan` để quyết định việc cho từng spec:
+- spec mới `approved` → triển khai;
+- spec đang chạy (heartbeat < 90 phút) → bỏ qua;
+- spec bị bỏ dở → làm tiếp;
+- `blocked` → thử lại;
+- `failed` và `spec.md` đã sửa → làm lại;
+- `done`/`failed` → báo Telegram **một lần**.
+
+`.claude/settings.json` được cài sẵn danh sách cấm: `git push --force`, `gh pr merge`, sửa `deploy/`, đọc `.env`. Theo tài liệu Claude Code, luật cấm cho Bash không phải một rào an toàn tuyệt đối, nên rào thật là gate máy (kiểm `git diff`).
 
 ## Cập nhật và kiểm tra
 ```bash
@@ -57,5 +74,5 @@ npx github:kaii193/sdd-kit doctor --directory D:/gf-work [--autonomous]
 
 ## Gỡ
 - Xóa thư mục gốc.
-- Xóa `~/.claude/skills/gf-init`, `~/.claude/skills/gf-spec`, `~/.claude/gf/`.
+- Xóa `~/.claude/skills/gf-init`, `gf-spec`, `gf-implement`, `~/.claude/agents/gf-*.md`, `~/.claude/gf/`.
 - Repo code không cần gỡ gì.

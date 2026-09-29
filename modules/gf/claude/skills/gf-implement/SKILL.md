@@ -16,7 +16,7 @@ Bạn là **orchestrator**. Bạn không tự viết code, test hay review. Bạ
 
 ## Các bước
 
-1. **Xác định spec.** Tham số `<dự-án> <NNN>` ứng với thư mục `projects/<dự-án>/specs/<NNN>-*`. Gọi `<spec>` là đường dẫn tương đối đó.
+1. **Xác định spec.** Tham số là `<dự-án> <NNN>` (ứng với `projects/<dự-án>/specs/<NNN>-*`) hoặc đường dẫn `projects/<dự-án>/specs/<NNN-ten>`, kèm `--auto` nếu là chế độ độc lập. Gọi `<spec>` là đường dẫn tương đối đó.
 2. **Bắt đầu:** `CLI run start <spec>`. Lệnh lỗi thì báo nguyên văn rồi dừng (chế độ độc lập: kết thúc lượt chạy của spec này).
 3. **Vòng lặp.** Gọi `CLI run next <spec>` rồi làm theo trường `kind` trong JSON trả về:
 
