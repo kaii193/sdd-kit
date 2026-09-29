@@ -48,7 +48,6 @@ make_variant() {
   local name="$1" sed_script="$2" dir="$specs/$1"
   mkdir -p "$dir"
   sed -e "$sed_script" "$FIXTURE/spec.md" > "$dir/spec.md"
-  cp "$FIXTURE/plan.md" "$dir/plan.md"
   printf '%s' "$dir"
 }
 

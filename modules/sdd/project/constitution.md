@@ -1,6 +1,6 @@
 # Constitution — <Tên dự án>
 
-> Tài liệu cấp cao nhất. Mọi spec, plan, code phải tuân theo.
+> Tài liệu cấp cao nhất. Mọi spec, task và code phải tuân theo.
 > Nguyên tắc: điều gì kiểm tra được bằng máy (type, lint, test) thì ghi ở đây **chỗ nó được kiểm tra**, không chỉ mô tả bằng lời.
 
 **Phiên bản:** 1.0 · **Cập nhật:** YYYY-MM-DD · **Chủ sở hữu:** <tên/team>

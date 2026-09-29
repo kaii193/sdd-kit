@@ -5,7 +5,7 @@
 **Branch:** `feat/NNN-ten-tinh-nang` · **Roadmap:** Phase X
 **Liên quan:** <spec khác, ADR, ticket>
 
-> Spec trả lời **CÁI GÌ** và **TẠI SAO**. Chi tiết kỹ thuật để cho plan.md.
+> Spec trả lời **CÁI GÌ** và **TẠI SAO**. Chi tiết kỹ thuật do Coding Agent ghi trong `tech/`.
 > Trạng thái: `draft` → `in-review` → `approved` → `implemented` (hoặc `superseded`).
 > Chỉ đặt `approved` khi `bash .gf/scripts/check-ready.sh <thư mục spec>` pass. Nhãn `[SUY ĐOÁN]`, `[ĐỀ XUẤT]` phải được dev xác nhận rồi xóa trước đó.
 

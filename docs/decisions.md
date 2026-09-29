@@ -6,7 +6,7 @@ Ghi lại các điểm đã thống nhất khi xây dựng kit và lý do đằn
 **Quyết định:** Dev phải hiểu hệ thống. Agent soạn nháp và viết code trong phạm vi đã khoanh, con người quyết định kiến trúc, phụ thuộc, tiêu chí nghiệm thu và nghiệm thu.
 **Lý do:** Nếu agent tự viết spec, plan và dev chỉ bấm duyệt, quy trình chỉ còn là giấy tờ. Ở dự án lớn, lỗi tích tụ trong những thứ nghe hợp lý mà không ai kiểm chứng.
 
-## D2. Tách spec, plan, tasks
+## D2. Tách spec, plan, tasks (đã thay bằng D13)
 **Quyết định:** Spec trả lời cái gì và tại sao, plan trả lời làm thế nào và dùng lại gì, tasks là các bước có kiểm chứng.
 **Lý do:** Người duyệt ý định và người duyệt kỹ thuật khác nhau. Trộn chung làm cả hai khó duyệt.
 
@@ -34,7 +34,7 @@ Ghi lại các điểm đã thống nhất khi xây dựng kit và lý do đằn
 **Quyết định:** patterns.md trỏ tới code thật trong dự án. Lỗi pattern lặp lại được ghi nhật ký và cân nhắc chuyển thành lint rule.
 **Lý do:** Agent làm theo ví dụ tốt hơn làm theo quy tắc trừu tượng. Lint rule loại bỏ lỗi vĩnh viễn thay vì phải nhắc mãi.
 
-## D9. Máy kiểm tra được thì để máy kiểm tra
+## D9. Máy kiểm tra được thì để máy kiểm tra (CI đã thay bằng gate local, D14)
 **Quyết định:** check-spec.sh chặn gate G1, G2. check-scope.sh so sánh module bị sửa với mục Phụ thuộc. CI chạy cả hai trên branch feature.
 **Lý do:** Gate chỉ dựa vào người dễ thành đóng dấu cho qua.
 
@@ -45,3 +45,23 @@ Ghi lại các điểm đã thống nhất khi xây dựng kit và lý do đằn
 ## D11. Kit không đụng README của dự án
 **Quyết định:** Hướng dẫn cho người nằm ở sdd/GUIDE.md, luật cho agent ở AGENTS.md.
 **Lý do:** README của dự án dùng cho cài đặt, cấu hình và chạy dự án.
+
+## D12. Người chỉ viết spec, agent làm phần còn lại
+**Quyết định:** Dev viết spec bằng `/gf-spec`. Sau khi spec `approved`, bộ agent (PM, Coding, QC, Reviewer) triển khai theo máy trạng thái, có người ngồi cùng (`/gf-implement`) hoặc tự chạy mỗi giờ (runner trên Claude Desktop Schedule).
+**Lý do:** Spec là chỗ người tạo ra nhiều giá trị nhất. Phần còn lại lặp lại được, nên máy làm và máy kiểm.
+
+## D13. PM task và task kỹ thuật thay cho plan và tasks
+**Quyết định:** PM chia spec thành PM task theo góc nhìn người dùng (`pm-tasks.json`). Coding tách mỗi PM task thành task kỹ thuật (`tech/<task>.md`). Template `plan.md`/`tasks.md` và gate G2 bị bỏ.
+**Lý do:** Có hai bộ tài liệu cho cùng một việc thì một bộ sẽ lệch. Máy trạng thái chỉ đọc `pm-tasks.json`.
+
+## D14. Gate chạy local thay cho CI
+**Quyết định:** Spec nằm trong thư mục gốc gf, không nằm trong repo code, nên CI của repo code không thấy spec. `check-ready` chạy trước khi `approved`; `run lock` và `run gate` chạy mỗi vòng.
+**Lý do:** Repo code không nhận file nào từ kit, để giữ repo code sạch.
+
+## D15. Máy trạng thái giữ luật, không để LLM tự nhớ
+**Quyết định:** Đếm vòng, chuyển bước, phân loại FAILED/BLOCKED nằm trong code tất định (`lib/engine/state-machine.js`). Agent chỉ báo kết quả của bước mình làm; bước máy (lock, gate) không ghi tay được.
+**Lý do:** Phiên dài bị nén ngữ cảnh thì LLM có thể quên mình đang ở vòng mấy, mà cả hệ thống dựa vào luật "tối đa 3 vòng".
+
+## D16. Test viết trước và bị khóa
+**Quyết định:** QC viết test theo interface stub trước khi có code. Test phải đỏ tại assertion. Coding không được sửa test đã khóa; QC sửa test phải trích spec, và số test/assertion không được giảm.
+**Lý do:** Nếu người viết code cũng tự viết test, phán quyết "test xanh" là vô nghĩa.

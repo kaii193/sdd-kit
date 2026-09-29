@@ -1,6 +1,6 @@
 {
   "name": "sdd",
-  "description": "Lõi SDD: luật cho agent, template spec/plan/tasks, script kiểm tra, template dự án",
+  "description": "Lõi SDD: luật cho agent, template spec, script kiểm tra, template dự án",
   "requires": [],
   "requiresTools": [],
   "userOwned": ["CLAUDE.md"]

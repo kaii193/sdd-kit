@@ -1,21 +1,21 @@
-# Mô hình SDD Kit
+# Mô hình gf
 
 ## Cấu trúc ba tầng
 
 ```mermaid
 flowchart TB
-  subgraph P["Tầng dự án: viết một lần, sửa khi replan"]
-    C["Constitution: sứ mệnh, kiến trúc, module"]
+  subgraph P["Tầng dự án (projects/<dự-án>/): viết một lần, sửa khi replan"]
+    C["Constitution: kiến trúc, module, quyết định mặc định 4.5"]
     PT["Patterns: file mẫu, code dùng chung"]
-    A["ADR: quyết định kiến trúc"]
+    CFG["config.sh: repo code, lệnh test/lint, module"]
   end
-  subgraph F["Tầng tính năng: mỗi tính năng một branch"]
-    S["Spec: cái gì, tại sao"] --> PL["Plan: cách làm, tái sử dụng"] --> T["Tasks: các bước, nghiệm thu"]
+  subgraph F["Tầng tính năng: mỗi spec một worktree, mỗi PM task một branch"]
+    S["Spec: cái gì, tại sao"] --> PM["pm-tasks.json: tính năng theo góc nhìn người dùng"] --> TT["tech/: task kỹ thuật"]
   end
-  subgraph K["Tầng kiểm soát: canh gác mọi thay đổi"]
-    AG["AGENTS.md: luật cho agent"]
-    SC["Scripts: check-spec, check-scope"]
-    CI["CI và review: test, lint, chủ module"]
+  subgraph K["Tầng kiểm soát"]
+    SM["Máy trạng thái: bước, vòng, FAILED/BLOCKED"]
+    G["Gate: khóa test, check-scope, lint, test"]
+    R["Reviewer, QC, người review PR"]
   end
   P --> F
   K --> F
@@ -23,44 +23,43 @@ flowchart TB
 
 | Tầng | Vai trò |
 |---|---|
-| Dự án | Đặt luật chơi, dẫn dắt mọi tính năng |
-| Tính năng | Chuyển ý định thành code qua spec, plan, tasks |
-| Kiểm soát | Chặn thay đổi lệch khỏi spec và quy ước |
+| Dự án | Đặt luật chơi cho mọi tính năng của một repo code |
+| Tính năng | Chuyển ý định thành code: spec → PM task → task kỹ thuật |
+| Kiểm soát | Chặn thay đổi lệch khỏi spec và quy ước, bằng máy trước, người sau |
 
 ## Quy trình một tính năng
 
 ```mermaid
 flowchart LR
-  A["Tìm hiểu: dev xác định module, hợp đồng"] --> B["Spec: Gate G1"]
-  B --> C["Plan: Gate G2"]
-  C --> D["Tasks"]
-  D --> E{"Sửa hợp đồng?"}
-  E -- "Có" --> F["PR hợp đồng riêng, merge trước"]
-  E -- "Không" --> G["Implement: agent làm, CI canh"]
-  F --> G
-  G --> H["Nghiệm thu: Gate G3"]
-  H --> I["Merge, replan"]
+  A["/gf-spec: dev viết, 3 critic debate"] --> B{"check-ready"}
+  B -- "đạt" --> C["approved"]
+  B -- "chưa" --> A
+  C --> D["runner mỗi giờ hoặc /gf-implement"]
+  D --> E["PM: pm-tasks.json"]
+  E --> F["stub → test QC → lock"]
+  F --> G["implement → gate → review → QC"]
+  G -- "chưa đạt, vòng < 3" --> G
+  G -- "đạt" --> H["PR draft"]
+  G -- "hết 3 vòng" --> I["FAILED: sửa spec"]
   I -.-> A
-  G -. "Spec sai hoặc thiếu" .-> B
+  H --> J["Telegram → người review, merge"]
 ```
 
-| Bước | Người quyết định | Agent thực hiện |
+| Bước | Người quyết định | Agent/máy thực hiện |
 |---|---|---|
-| Tìm hiểu | Module chạm vào, có sửa hợp đồng không | Tra cứu nơi đang dùng |
-| Spec | Phạm vi, quan hệ phụ thuộc, AC, duyệt G1 | Soạn nháp |
-| Plan | Duyệt G2: tái sử dụng, pattern, file bị sửa | Đề xuất |
-| Tasks | Kiểm tra mỗi task có AC và cách kiểm chứng | Chia bước |
-| PR hợp đồng | Chủ module duyệt, ADR nếu lớn | Sửa hợp đồng và contract test |
-| Implement | Review sau mỗi giai đoạn | Code, test, commit theo task |
-| Nghiệm thu | Thử từng AC, duyệt G3 | Đối chiếu code với spec |
-| Merge, replan | Cập nhật roadmap, ADR, patterns | Đề xuất cập nhật |
+| Spec | Phạm vi, Phụ thuộc, AC, trả lời câu hỏi 🔴 | Tra cứu, phỏng vấn, debate, `check-ready` |
+| PM task | — | `gf-pm`; máy kiểm mọi AC đều có task |
+| Test | — | `gf-qc` viết trước; máy kiểm "đỏ tại assertion" và khóa |
+| Code | — | `gf-coder`; gate máy chặn sửa test khóa, sai phạm vi, lint/test đỏ |
+| Nghiệm thu | Review PR draft, merge | `gf-reviewer`, `gf-qc`; tối đa 3 vòng |
+| Replan | Cập nhật constitution 4.5, patterns | `run metrics` |
 
 ## Các lớp phòng thủ
 
 | Lớp | Bắt lỗi |
 |---|---|
-| Spec | Sai ý định, thiếu trường hợp |
-| Plan | Viết lại thứ đã có, sai hướng |
-| Patterns | Lệch cấu trúc code |
-| Scripts và CI | Sửa ngoài phạm vi, vi phạm máy móc |
-| Review | Phần máy không phán được |
+| Spec + debate + `check-ready` | Sai ý định, thiếu trường hợp, thiếu tài nguyên |
+| Test trước, khóa | Code chạy nhưng sai AC; test viết cho có |
+| Gate máy | Sửa ngoài phạm vi, sửa test đã khóa, đường dẫn bị cấm, lint/test đỏ |
+| Reviewer | Lệch pattern, viết lại thứ đã có |
+| Người | Phần máy không phán được |

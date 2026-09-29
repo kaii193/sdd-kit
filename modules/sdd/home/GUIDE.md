@@ -25,7 +25,7 @@
 1. **SDD không phải vibe code.** Dev phải hiểu hệ thống. Spec là nơi hiểu biết đó được viết ra để người và agent dùng chung — không phải cách để khỏi cần hiểu.
 2. **Mỗi tài liệu trả lời một câu hỏi.** Spec: *cái gì, tại sao*. Plan: *làm thế nào, dùng lại gì*. Tasks: *các bước*. Không trộn.
 3. **Máy kiểm tra được thì để máy kiểm tra.** Hợp đồng giữa module là code (type, schema, OpenAPI), không phải văn bản. Ranh giới do lint ép. Hành vi do test bảo vệ. Tài liệu chỉ trỏ tới những thứ đó.
-4. **Nhiều lớp, mỗi lớp bắt một loại lỗi.** Spec bắt sai ý định, plan bắt thiếu tái sử dụng, file mẫu dẫn dắt pattern, CI chặn vi phạm máy móc, người review phần còn lại.
+4. **Nhiều lớp, mỗi lớp bắt một loại lỗi.** Spec bắt sai ý định, Reviewer bắt thiếu tái sử dụng, file mẫu dẫn dắt pattern, CI chặn vi phạm máy móc, người review phần còn lại.
 5. **Spec là nguồn sự thật về ý định.** Đổi hành vi → sửa spec trước, code sau.
 6. **Nhỏ thắng lớn.** Một spec: 1–5 ngày. Lớn hơn → tách.
 
@@ -206,7 +206,7 @@ Chạy trong thư mục gốc gf. `<spec>` là đường dẫn tới thư mục 
 |---|---|
 | `bash .gf/scripts/new-spec.sh <dự-án> <ten>` | Tạo spec mới trong dự án, đánh số tự động |
 | `bash .gf/scripts/check-ready.sh <spec>` | G1: spec đạt các tiêu chí sẵn sàng chưa |
-| `bash .gf/scripts/check-spec.sh <spec>` | G1/G2: trạng thái spec và plan, chạy `check-ready.sh` |
+| `bash .gf/scripts/check-spec.sh <spec>` | G1: spec phải `approved`, và chạy `check-ready.sh` |
 | `bash .gf/scripts/check-scope.sh <spec>` | Module bị sửa trong repo code có khớp mục Phụ thuộc không. So branch hiện tại của repo (`PROJECT_PATH`, hoặc `GF_CODE_DIR` nếu đặt) với `BASE_BRANCH` |
 
 `check-scope.sh` báo:
@@ -273,7 +273,7 @@ Spec nằm trong thư mục gốc chứ không nằm trong repo code, nên CI c�
 | Code đúng spec nhưng sai ý | AC mơ hồ | AC có số liệu, mã lỗi cụ thể |
 | Agent làm thêm thứ không yêu cầu | Thiếu "Ngoài phạm vi" | Liệt kê rõ |
 | Agent sửa module khác | Phụ thuộc không khai báo / không ép | `check-scope.sh` strict + luật AGENTS.md |
-| Viết lại hàm đã có | Không tìm trước | Mục Tái sử dụng trong plan + bảng code dùng chung |
+| Viết lại hàm đã có | Không tìm trước | `tech/<task>.md` (mục dùng lại) + Reviewer + bảng code dùng chung |
 | Mỗi chỗ một kiểu code | Không có file mẫu | patterns.md + lint rule |
 | Spec cũ lệch code | Sửa code bỏ qua spec | Sửa spec trước; checklist G3 |
 | Agent quên ngữ cảnh | Chat quá dài | Phiên mới mỗi bước |
@@ -326,32 +326,10 @@ Tìm mọi module đang import hoặc dùng các thứ đó (theo MODULE_GLOBS t
 Soạn bảng Phụ thuộc dạng | Module | Quan hệ đề xuất | Bằng chứng (file:dòng) |. Chỉ báo cáo.
 ```
 
-### P6 — Soạn plan 🆕
-```
-Spec projects/<dự-án>/specs/NNN-ten/spec.md đã approved. Đọc constitution, patterns.md, ADR liên quan, spec,
-và cửa vào công khai của các module trong mục Phụ thuộc. Viết plan.md:
-- Mục 3 Tái sử dụng: TÌM trong codebase trước; mọi thứ tạo mới phải có lý do.
-- Mục 4 Pattern: trỏ tới file mẫu trong patterns.md cho từng phần việc.
-- Chỉ sửa module khai báo trong spec. Mâu thuẫn với constitution → dừng và báo.
-```
-
-### P7 — Chia tasks
-```
-Chia plan.md thành tasks.md. Mỗi task: gắn AC, ghi file mẫu, có cách kiểm chứng.
-Có "Sửa hợp đồng" → T0.1 là PR hợp đồng riêng. Brownfield → T0.2 characterization test.
-```
-
-### P8 — Thực thi giai đoạn 🆕
-```
-Thực hiện Giai đoạn <X> trong projects/<dự-án>/specs/NNN-ten/tasks.md theo AGENTS.md.
-Sau mỗi task: chạy test liên quan, tick checkbox, commit "[NNN-Tx] mô tả".
-Cuối giai đoạn: chạy bash .gf/scripts/check-scope.sh, sửa lỗi nếu có, rồi dừng chờ tôi review.
-```
-
 ### P9 — Đối chiếu code với spec
 ```
 Đối chiếu code trên branch hiện tại với projects/<dự-án>/specs/NNN-ten/spec.md.
-Liệt kê: (1) chỗ code khác spec, (2) AC chưa có test, (3) file ngoài plan mục 6,
+Liệt kê: (1) chỗ code khác spec, (2) AC chưa có test, (3) file ngoài tech/<task>.md,
 (4) module bị sửa không có trong mục Phụ thuộc, hoặc module 'Chỉ đọc' bị sửa. Chỉ báo cáo.
 ```
 
@@ -365,7 +343,7 @@ Rà code mới trên branch hiện tại:
 
 ### P11 — Sửa spec giữa chừng
 ```
-Khi làm task <Tx> phát hiện: <vấn đề>. Đề xuất sửa spec.md (và plan.md nếu cần),
+Khi làm task <Tx> phát hiện: <vấn đề>. Đề xuất sửa spec.md,
 ghi vào Lịch sử thay đổi. Chưa sửa code cho tới khi tôi duyệt.
 ```
 
@@ -373,5 +351,5 @@ ghi vào Lịch sử thay đổi. Chưa sửa code cho tới khi tôi duyệt.
 ```
 Tính năng NNN vừa merge. Đề xuất cập nhật: roadmap và bảng "Spec đang thực hiện" trong constitution;
 quyết định nên ghi ADR; bổ sung patterns.md (file mẫu, code dùng chung, lỗi lặp lại);
-chỉnh sửa specs/_template nếu có mục thừa/thiếu. Chỉ đề xuất.
+chỉnh sửa .gf/templates/spec nếu có mục thừa/thiếu. Chỉ đề xuất.
 ```
