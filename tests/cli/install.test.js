@@ -12,7 +12,7 @@ test('installs skills and a kit copy into the Claude dir and scaffolds the gf ho
   const result = install(sandbox);
 
   assert.equal(result.status, 0, result.stderr);
-  for (const file of ['skills/gf-init/SKILL.md', 'skills/gf-spec/SKILL.md', 'skills/gf-implement/SKILL.md', 'agents/gf-pm.md', 'agents/gf-coder.md', 'agents/gf-qc.md', 'agents/gf-reviewer.md', 'gf/kit/bin/gf.js', 'gf/manifest.json']) {
+  for (const file of ['skills/gf-init/SKILL.md', 'skills/gf-spec/SKILL.md', 'skills/gf-implement/SKILL.md', 'agents/gf-pm.md', 'agents/gf-coder.md', 'agents/gf-qc.md', 'agents/gf-reviewer.md', 'agents/gf-spec-researcher.md', 'agents/gf-spec-critic-user.md', 'agents/gf-spec-critic-attacker.md', 'agents/gf-spec-critic-maintainer.md', 'agents/gf-spec-moderator.md', 'gf/kit/bin/gf.js', 'gf/manifest.json']) {
     assert.ok(exists(path.join(sandbox.claude, file)), `thiếu ~/.claude/${file}`);
   }
   for (const file of ['AGENTS.md', 'CLAUDE.md', '.gf/scripts/check-ready.sh', '.gf/templates/spec/spec.md', 'projects', '.claude/settings.json']) {

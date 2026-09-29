@@ -70,19 +70,26 @@ Khách hàng không nhập được mã giảm giá ở bước thanh toán nên
 - **Ràng buộc:** mỗi đơn chỉ áp một mã
 - **Giả định:** mã không phân biệt hoa thường
 
-## 11. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
+## 11. Tài nguyên
+- **Thiết kế / asset:** không có giao diện
+- **Hợp đồng có sẵn:** `src/pricing/index.ts`
 
-## 12. Rủi ro
+## 12. Môi trường chạy thử
+- Dùng lệnh chung trong config.sh
+
+## 13. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
+
+## 14. Rủi ro
 | Rủi ro | Khả năng | Ảnh hưởng | Giảm thiểu |
 |---|---|---|---|
 | Áp trùng mã khi bấm hai lần | Trung bình | Trừ tiền hai lần | Khóa theo đơn hàng |
 
-## 13. Câu hỏi mở
+## 15. Câu hỏi mở
 | # | Câu hỏi | Mức | Người trả lời | Trả lời |
 |---|---|---|---|---|
 | Q1 | Mã có phân biệt hoa thường không? | ✅ | PO | Không phân biệt |
 
-## 14. Lịch sử thay đổi
+## 16. Lịch sử thay đổi
 | Ngày | Thay đổi | Lý do |
 |---|---|---|
 | 2026-09-28 | Khởi tạo | |

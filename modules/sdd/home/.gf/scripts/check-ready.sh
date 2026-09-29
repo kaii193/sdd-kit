@@ -146,6 +146,29 @@ check_error_flows() {
   done <<<"$flows"
 }
 
+filled_bullets() {
+  section_body "$1" | grep -E '^- ' | grep -v '<' || true
+}
+
+check_resources() {
+  local items resource
+  items="$(filled_bullets "Tài nguyên")"
+  if [ -z "$items" ]; then
+    err "Mục 'Tài nguyên' trống — liệt kê thiết kế/asset, hợp đồng có sẵn, dữ liệu test (hoặc ghi rõ 'không có')"
+    return 0
+  fi
+  [ -n "${PROJECT_PATH:-}" ] || return 0
+  while IFS= read -r resource; do
+    [ -n "$resource" ] || continue
+    [ -e "$PROJECT_PATH/$resource" ] || err "Tài nguyên trỏ tới file không có trong repo code: $resource"
+  done < <(grep -oE '`[^`[:space:]:]+/[^`[:space:]:]+\.[A-Za-z0-9]+`' <<<"$items" | tr -d '`')
+}
+
+check_test_environment() {
+  [ -n "$(filled_bullets "Môi trường chạy thử")" ] \
+    || err "Mục 'Môi trường chạy thử' trống — ghi cách chạy app/e2e cho tính năng, hoặc 'dùng lệnh chung'"
+}
+
 check_title() {
   if grep -q '<Tên tính năng>' <<<"$spec_text"; then
     warn "Tiêu đề spec còn placeholder"
@@ -163,6 +186,8 @@ check_vague_words
 check_out_of_scope
 check_unconfirmed_labels
 check_error_flows "$ac_report"
+check_resources
+check_test_environment
 check_title
 
 echo

@@ -95,89 +95,72 @@ node ~/.claude/gf/kit/bin/gf.js doctor --directory .
 ## 5. Vòng lặp một tính năng
 
 ```
-5.1 Tìm hiểu ─► 5.2 Spec ─► 5.3 Plan ─► 5.4 Tasks ─► 5.5 PR hợp đồng ─► 5.6 Implement ─► 5.7 Nghiệm thu ─► 5.8 Merge & replan
-   (dev)       G1 (người)   G2 (người)                (nếu cần)          (agent + CI)      G3 (người + CI)
+/gf-spec ─► debate spec ─► check-ready ─► approved ─► runner mỗi giờ  hoặc  /gf-implement
+                                                         │
+PM: pm-tasks.json ─► với mỗi PM task: stub ─► test QC (khóa) ─► implement ─► gate ─► review ─► QC
+                                                         │  tối đa 3 vòng, dừng sớm khi đạt
+Mỗi PM task một PR draft (xếp chồng) ─► Telegram khi spec đổi trạng thái ─► người review, merge
 ```
-Mở **phiên chat mới** ở mỗi bước lớn (spec, plan, implement) — file là bộ nhớ, không phải lịch sử chat.
 
 ### 5.1 Tìm hiểu — dev làm
 Trả lời hai câu hỏi trước khi viết gì:
 1. Tính năng chạm vào **những module nào**?
 2. Có phải **sửa hợp đồng dùng chung** không?
 
-Agent tra cứu giúp (prompt [P5](#p5--phân-tích-phụ-thuộc)) hoặc dùng công cụ: `madge`/`dependency-cruiser` (JS/TS), "Find All References" trong IDE, `nx affected` (monorepo). **Kết luận là của dev.** Không trả lời được hai câu trên → chưa bắt đầu.
+`/gf-spec` gọi agent `gf-spec-researcher` tra cứu giúp, kèm bằng chứng `file:dòng`. **Kết luận là của dev.**
 
-### 5.2 Spec
-```bash
-bash .gf/scripts/new-spec.sh <dự-án> ap-ma-giam-gia
-```
-Lệnh tạo `projects/<dự-án>/specs/015-ap-ma-giam-gia/`. Branch `feat/015-ap-ma-giam-gia` trên repo code do agent tạo khi bắt đầu triển khai.
-Soạn bằng `/gf-spec` (hoặc prompt [P4](#p4--soạn-spec)). Người tập trung vào:
-- **Phụ thuộc:** module + quan hệ (xem bên dưới). Dev tự quyết cột Quan hệ.
+### 5.2 Spec — `/gf-spec`
+Spec là thứ **duy nhất** người đưa vào; khi chạy độc lập không có ai để agent hỏi, nên spec phải đủ để agent không vướng. Người tập trung vào:
+- **Phụ thuộc:** module + quan hệ (bảng dưới). Dev tự quyết cột Quan hệ.
 - **Ngoài phạm vi:** chặn agent làm thêm.
 - **AC:** kiểm tra được bằng máy.
   - ❌ `Then hệ thống báo lỗi`
   - ✅ `Then trả về HTTP 422, code "PROMO_EXPIRED", tổng tiền không đổi`
+  - Giao diện: viewport, asset (đường dẫn), layout (có mặt, thứ tự, chứa trong, vị trí tương đối). Không so screenshot.
+- **Tài nguyên:** thiết kế/asset, hợp đồng có sẵn, dữ liệu mẫu. Đường dẫn file phải tồn tại trong repo code.
+- **Môi trường chạy thử:** cách chạy app/e2e, hoặc "dùng lệnh chung".
 
-**Từ khóa quan hệ** (script đọc cột này):
+**Từ khóa quan hệ** (script đọc chính xác cột này):
 | Quan hệ | Nghĩa | Agent được sửa? |
 |---|---|---|
 | `Chỉ đọc` | Dùng qua cửa vào công khai | ✗ |
 | `Sửa nội bộ` | Sửa bên trong, không đổi hợp đồng | ✓ |
-| `Sửa hợp đồng` | Đổi type/API/schema dùng chung | ✓ — PR riêng làm trước (5.5) |
+| `Sửa hợp đồng` | Đổi type/API/schema dùng chung | ✓ — nên là PM task đầu tiên (5.4) |
 | `Mới` | Module mới | ✓ |
 | `Bị ảnh hưởng` | Đang dùng thứ bị đổi; test phải chạy lại | ✗ (cảnh báo nếu sửa) |
 
-Ví dụ:
-```markdown
-| Module | Quan hệ | Ghi chú |
+**Debate spec:** ba critic (người dùng, tấn công, bảo trì) phản biện độc lập rồi đọc chéo, tối đa 5 vòng; moderator loại luận điểm không trỏ về spec và dừng khi không còn bằng chứng mới. Vấn đề còn lại thành câu hỏi 🔴 trong Câu hỏi mở cho dev trả lời.
+
+Hết 🔴 và `check-ready` pass → `**Trạng thái:** approved` → **G1**.
+
+### 5.3 Triển khai — bộ agent
+| Bước | Ai làm | Máy kiểm gì |
 |---|---|---|
-| cart, promotion | Chỉ đọc | |
-| pricing | Sửa hợp đồng | Thêm `discounts` vào PriceResult — ADR-012 |
-| checkout | Sửa nội bộ | |
-| invoice | Bị ảnh hưởng | Đang dùng PriceResult |
-```
-Trả lời hết câu hỏi 🔴 (đổi thành ✅) → `**Trạng thái:** approved` → **G1**.
+| plan | `gf-pm`: spec → `pm-tasks.json` (tính năng theo góc nhìn người dùng) | Mọi AC thuộc một task; id, thứ tự phụ thuộc hợp lệ |
+| stub | `gf-coder`: task kỹ thuật (`tech/<task>.md`) + interface stub | Commit được ghi lại |
+| tests | `gf-qc`: test cho từng AC qua stub | — |
+| lock | máy | Test phải **đỏ tại assertion** (pass sẵn → trả QC; lỗi import → không tính); khóa file test, đếm test/assertion |
+| implement | `gf-coder` | — |
+| gate | máy | Test khóa nguyên vẹn, số assertion không giảm, không đụng `FORBIDDEN_PATHS`, `check-scope`, lint, test |
+| review | `gf-reviewer` (chỉ đọc) | — |
+| qc | `gf-qc`: nghiệm thu toàn bộ, phân xử phản biện của Coding theo spec | QC sửa test phải trích spec (`run relock`) |
 
-### 5.3 Plan — agent đề xuất, người duyệt
-Prompt [P6](#p6--soạn-plan). Người kiểm tra ba mục:
-- **Tái sử dụng (mục 3):** mục "Tạo mới" có thứ gì đã tồn tại không? Lý do không dùng lại có thuyết phục không?
-- **Pattern (mục 4):** mỗi phần việc có trỏ tới file mẫu không?
-- **File bị ảnh hưởng (mục 6):** có nằm trong module đã khai báo không?
+- Chưa đạt ở gate/review/qc → vòng mới (tối đa 3). Hết 3 vòng → task **FAILED**, sang task sau.
+- Hạ tầng hỏng (lệnh test không chạy được) → spec **BLOCKED**, không tốn vòng, lần sau thử lại.
+- Task cần hành động bị cấm (migration DB thật, `deploy/`…) → **BLOCKED_BY_POLICY**, không thử.
+- Chế độ có người (`/gf-implement`): agent hỏi dev mỗi khi cần quyết định. Chế độ độc lập (runner): agent tự quyết theo spec → constitution 4.5, ghi giả định vào log.
 
-Duyệt → `approved` → **G2**. Chạy `bash .gf/scripts/check-spec.sh` để xác nhận.
+### 5.4 Sửa hợp đồng dùng chung
+Spec có `Sửa hợp đồng` thì PM nên đặt thay đổi hợp đồng làm **P1**, và thay đổi theo kiểu không phá vỡ (thêm trường tùy chọn, giá trị mặc định). Thay đổi phá vỡ bắt buộc → **expand–contract**: thêm cái mới cạnh cái cũ → chuyển bên dùng → xóa cái cũ; mỗi bước một spec. PR của P1 cần chủ module duyệt trước khi merge các PR xếp chồng phía sau.
 
-### 5.4 Tasks
-Prompt [P7](#p7--chia-tasks). Mỗi task gắn AC, có file mẫu, có cách kiểm chứng.
+### 5.5 Nghiệm thu của người — review PR
+1. Đọc tin Telegram và `runs/summary.md`: task nào DONE/FAILED, giả định agent đã tự chọn, hành động bị bỏ qua.
+2. Review các PR draft theo thứ tự xếp chồng (P1 trước). Chủ module review nếu PR chạm module của họ.
+3. Task FAILED: sửa spec (thêm AC, làm rõ) → runner tự làm lại các task failed ở lần chạy sau.
+4. Merge. Kit không bao giờ tự merge.
 
-### 5.5 PR hợp đồng — chỉ khi có `Sửa hợp đồng`
-Tách phần đổi hợp đồng thành PR nhỏ riêng (branch `feat/015-contract-discounts`), merge **trước**:
-1. Đổi hợp đồng theo kiểu không phá vỡ (thêm trường tùy chọn, giá trị mặc định).
-2. Cập nhật contract test của module sở hữu.
-3. Chạy test của mọi module `Bị ảnh hưởng`.
-4. Chủ module duyệt (CODEOWNERS tự yêu cầu). Thay đổi lớn → ADR.
-
-Thay đổi phá vỡ bắt buộc → **expand–contract**: thêm cái mới cạnh cái cũ → chuyển bên dùng → xóa cái cũ; mỗi bước một PR.
-
-Sau khi merge, phần còn lại của tính năng chỉ còn là "dùng", rủi ro giảm hẳn.
-
-### 5.6 Implement — agent làm, CI canh
-Prompt [P8](#p8--thực-thi-giai-đoạn). Nguyên tắc:
-- Từng giai đoạn, dừng review sau mỗi giai đoạn.
-- Agent muốn sửa module chưa khai báo → từ chối, cập nhật spec/plan trước.
-- Spec sai/thiếu → prompt [P11](#p11--sửa-spec-giữa-chừng), sửa spec trước, code sau.
-- CI mỗi commit: test, lint, type check, ranh giới module, `check-scope`.
-
-### 5.7 Nghiệm thu — G3
-1. CI xanh.
-2. Đi hết checklist cuối `tasks.md`.
-3. Tự tay thử từng AC.
-4. Prompt [P9](#p9--đối-chiếu-code-với-spec) (hành vi) và [P10](#p10--rà-tái-sử-dụng--pattern) (reuse, pattern).
-5. Chủ module review nếu PR chạm module của họ.
-6. Cập nhật spec/plan khớp code → spec `implemented`.
-
-### 5.8 Merge & replan
-Merge, rồi 10–15 phút với prompt [P12](#p12--replan): roadmap, ADR thiếu, nguyên tắc cần viết rõ hơn, patterns cần bổ sung, template cần chỉnh.
+### 5.6 Replan
+Sau mỗi vài spec: `node ~/.claude/gf/kit/bin/gf.js run metrics` (tỷ lệ đạt ngay vòng 1, số vòng trung bình, số giả định…) → bổ sung patterns, constitution 4.5, template (prompt [P12](#p12--replan)).
 
 ---
 
@@ -199,17 +182,18 @@ Chỉ tính năng có spec mới đi qua bộ agent gf. Quy trình nặng cho vi
 
 | Lớp | Bắt lỗi gì | Công cụ |
 |---|---|---|
-| Spec | Sai ý định, thiếu trường hợp | AC Given/When/Then, review |
-| Plan | Viết lại thứ đã có, sai hướng | Mục Tái sử dụng, Pattern, review |
-| Patterns | Lệch cấu trúc | File mẫu |
-| CI | Vi phạm máy móc | Test, lint, type, ranh giới, `check-spec`, `check-scope` |
-| Review | Phần máy không phán được | Người + CODEOWNERS |
+| Spec | Sai ý định, thiếu trường hợp | `/gf-spec`, debate spec, `check-ready` |
+| Test trước, khóa | Code chạy nhưng sai AC | QC viết test trước; lock kiểm "đỏ tại assertion" |
+| Gate máy | Vi phạm máy móc | Khóa test, số assertion, `FORBIDDEN_PATHS`, `check-scope`, lint, test |
+| Reviewer | Lệch pattern, viết lại thứ đã có | `gf-reviewer` |
+| QC nghiệm thu | AC chưa đạt | `gf-qc`, phân xử theo spec |
+| Người | Phần máy không phán được | Review PR draft |
 
-| Gate | Trước khi | Điều kiện | Kiểm tra tự động |
+| Gate | Trước khi | Điều kiện | Kiểm tra |
 |---|---|---|---|
-| G1 | Viết plan | Spec approved và đạt mọi tiêu chí sẵn sàng: không còn 🔴, Phụ thuộc đúng từ khóa, mỗi FR có AC, AC đủ Given/When/Then và không có từ mơ hồ, luồng lỗi trỏ tới AC, Ngoài phạm vi có nội dung, không còn nhãn chưa xác nhận | `check-ready.sh` (qua `check-spec.sh`) |
-| G2 | Viết code | Plan approved, có Tái sử dụng, Pattern | `check-spec.sh` |
-| G3 | Merge | Checklist tasks.md, CI xanh, spec khớp code | CI của dự án + checklist tasks.md |
+| G1 | Triển khai | Spec approved và đạt mọi tiêu chí sẵn sàng: không còn 🔴, Phụ thuộc đúng từ khóa, mỗi FR có AC, AC đủ Given/When/Then và không có từ mơ hồ, luồng lỗi trỏ tới AC, Ngoài phạm vi, Tài nguyên, Môi trường chạy thử có nội dung, không còn nhãn chưa xác nhận | `check-ready.sh` |
+| Gate máy | Mỗi vòng | Như bảng trên | `run lock`, `run gate` |
+| G3 | Merge | PR draft đã review, CI của dự án xanh | Người |
 
 ---
 
@@ -248,7 +232,7 @@ Spec nằm trong thư mục gốc chứ không nằm trong repo code, nên CI c�
 
 1. **Không viết spec cho cả hệ thống.** Chỉ cho vùng đang thay đổi.
 2. **Characterization test trước, sửa sau** (tasks Giai đoạn 0). Test chốt hành vi hiện tại, pass trước khi sửa gì.
-3. **Spec mục 11 (Hành vi hiện tại)** do người hiểu hệ thống xác nhận — AI chỉ thấy code, không biết người dùng phụ thuộc vào gì.
+3. **Spec mục 13 (Hành vi hiện tại)** do người hiểu hệ thống xác nhận — AI chỉ thấy code, không biết người dùng phụ thuộc vào gì.
 4. **Ranh giới dựng dần.** Hệ thống cũ thường không có cửa vào module rõ ràng. Mỗi tính năng làm xong, dựng cửa vào cho module vừa chạm; thêm dần vào bảng module và `config.sh`.
 5. **Bắt đầu với `SCOPE_MODE="warn"`** và vùng rủi ro thấp.
 
@@ -272,12 +256,13 @@ Spec nằm trong thư mục gốc chứ không nằm trong repo code, nên CI c�
 
 | Vai trò | Trách nhiệm |
 |---|---|
-| Tech lead | Constitution, ADR, patterns, cấu hình công cụ ép ranh giới |
-| Người đặt yêu cầu (PO/BA) | Duyệt spec: vấn đề, phạm vi, AC (G1) |
-| Dev phụ trách spec | Tìm hiểu, xác định phụ thuộc, dẫn dắt spec, duyệt plan (G2), nghiệm thu (G3) |
+| Tech lead | Constitution (nhất là 4.5), ADR, patterns, cấu hình công cụ ép ranh giới |
+| Người đặt yêu cầu (PO/BA) | Trả lời câu hỏi 🔴 về vấn đề, phạm vi, AC |
+| Dev viết spec | Tìm hiểu, quyết định Phụ thuộc và AC, dẫn `/gf-spec`, review PR |
 | Chủ module | Bảo vệ hợp đồng; review PR chạm module |
-| AI agent | Tra cứu, soạn nháp, code, test, tự rà soát, báo mâu thuẫn |
-| CI | Chặn vi phạm máy móc |
+| `gf-pm`, `gf-coder`, `gf-qc`, `gf-reviewer` | Chia task, code, test/nghiệm thu, review — trong khuôn của máy trạng thái |
+| `gf-spec-*` | Tra cứu và phản biện spec |
+| Runner (Desktop Schedule) | Chạy mỗi giờ, không dừng, báo Telegram khi đổi trạng thái |
 
 ---
 
@@ -300,7 +285,7 @@ Spec nằm trong thư mục gốc chứ không nằm trong repo code, nên CI c�
 
 ## 13. Thư viện prompt
 
-> Thay `NNN-ten` bằng tên thật. 🆕 = mở phiên chat mới.
+> Dùng khi làm tay, không qua bộ agent: các skill `/gf-init`, `/gf-spec`, `/gf-implement` đã tự làm những việc này. Thay `NNN-ten` bằng tên thật. 🆕 = mở phiên chat mới.
 
 ### P1 — Phỏng vấn constitution
 ```

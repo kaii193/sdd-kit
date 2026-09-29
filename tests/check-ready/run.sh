@@ -120,6 +120,9 @@ expect_ready_rejects r9-out-of-scope-empty 's/^- Áp nhiều mã cùng lúc/- <.
 expect_ready_rejects r10-unconfirmed-label 's/Đang dùng PriceResult/Đang dùng PriceResult [SUY ĐOÁN]/' "Còn nhãn chưa xác nhận"
 expect_ready_rejects r11a-error-flow-without-ac 's/ (AC-2)//' "Luồng lỗi chưa trỏ tới AC"
 expect_ready_rejects r11b-error-flow-unknown-ac 's/(AC-2)/(AC-9)/' "Luồng lỗi trỏ tới AC-9 không tồn tại"
+expect_ready_rejects r12a-resources-empty 's/^- \*\*Thiết kế \/ asset:\*\* không có giao diện/- <...>/;s/^- \*\*Hợp đồng có sẵn:\*\* `src\/pricing\/index.ts`/- <...>/' "Mục 'Tài nguyên' trống"
+expect_ready_rejects r12b-resource-file-missing 's#`src/pricing/index.ts`#`src/pricing/khong-co.ts`#' "Tài nguyên trỏ tới file không có trong repo code: src/pricing/khong-co.ts"
+expect_ready_rejects r13-test-environment-empty 's/^- Dùng lệnh chung trong config.sh/- <...>/' "Mục 'Môi trường chạy thử' trống"
 
 echo "== check-ready: đầu vào sai"
 expect_script missing-spec-argument 1 "Thiếu thư mục spec" check-ready.sh

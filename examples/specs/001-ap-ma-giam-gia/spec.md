@@ -69,19 +69,26 @@ Khách không áp được mã giảm giá khi tính giá đơn hàng, nên đ�
 - **Ràng buộc:** không thêm dependency
 - **Giả định:** danh sách mã được viết cứng trong module pricing
 
-## 11. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
+## 11. Tài nguyên
+- **Thiết kế / asset:** không có giao diện
+- **Hợp đồng có sẵn:** `src/pricing/index.js`, `src/cart/index.js`
 
-## 12. Rủi ro
+## 12. Môi trường chạy thử
+- Dùng lệnh chung (`node --test`, `node scripts/lint.js`)
+
+## 13. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
+
+## 14. Rủi ro
 | Rủi ro | Khả năng | Ảnh hưởng | Giảm thiểu |
 |---|---|---|---|
 | Làm đổi kết quả của lời gọi `priceOrder(items)` cũ | Thấp | Sai giá | Tham số mã là tùy chọn |
 
-## 13. Câu hỏi mở
+## 15. Câu hỏi mở
 | # | Câu hỏi | Mức | Người trả lời | Trả lời |
 |---|---|---|---|---|
 | Q1 | Mã có phân biệt hoa thường không? | ✅ | PO | Có phân biệt |
 
-## 14. Lịch sử thay đổi
+## 16. Lịch sử thay đổi
 | Ngày | Thay đổi | Lý do |
 |---|---|---|
 | 2026-09-29 | Khởi tạo | |

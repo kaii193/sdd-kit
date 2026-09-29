@@ -40,6 +40,10 @@ Phiên phải đang mở trong **thư mục gốc gf**: thư mục có `.gf/mani
    ```
    Báo lại cho dev từng mục còn ✗ và cách sửa.
 
+6. **Nhắc dev hai việc**, vì agent không tự làm được:
+   - Mở lại Claude trong thư mục gốc và **chấp nhận hộp thoại tin cậy**. Repo code vừa được thêm vào `additionalDirectories`, mà thiết lập này chỉ có hiệu lực sau khi được chấp nhận.
+   - Nếu muốn chạy độc lập: làm theo `runner.md` (tạo một lần cho cả thư mục gốc), rồi chạy `doctor --autonomous`.
+
 ## Không làm
 
 - Không sửa file nào trong repo code.

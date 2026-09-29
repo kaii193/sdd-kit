@@ -76,24 +76,36 @@
 - **Ràng buộc:** <...>
 - **Giả định:** <nếu sai thì spec phải xem lại>
 
-## 11. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
+## 11. Tài nguyên
+> Mọi thứ agent cần để làm mà không phải hỏi lại. Đường dẫn file viết trong `backtick`, tương đối so với repo code; `check-ready` kiểm file có tồn tại.
+
+- **Thiết kế / asset:** <link thiết kế, đường dẫn asset — hoặc "không có giao diện">
+- **Hợp đồng có sẵn (API, schema, type):** <đường dẫn>
+- **Dữ liệu mẫu / tài khoản test:** <...>
+
+## 12. Môi trường chạy thử
+> Cách chạy app và e2e cho tính năng này. Giống lệnh chung trong `config.sh` thì ghi "dùng lệnh chung".
+
+- <...>
+
+## 13. Brownfield: hành vi hiện tại (bỏ qua nếu greenfield)
 - **Hành vi hiện tại:** <...>
 - **PHẢI GIỮ NGUYÊN:** <...>
 - **Characterization test cần có trước:** <...>
 
-## 12. Rủi ro
+## 14. Rủi ro
 | Rủi ro | Khả năng | Ảnh hưởng | Giảm thiểu |
 |---|---|---|---|
 | | | | |
 
-## 13. Câu hỏi mở
+## 15. Câu hỏi mở
 > Mức: 🔴 chặn · 🟡 không chặn · ✅ đã giải quyết. Gate G1: không còn dòng 🔴.
 
 | # | Câu hỏi | Mức | Người trả lời | Trả lời |
 |---|---|---|---|---|
 | Q1 | | | | |
 
-## 14. Lịch sử thay đổi
+## 16. Lịch sử thay đổi
 | Ngày | Thay đổi | Lý do |
 |---|---|---|
 | | Khởi tạo | |
