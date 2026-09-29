@@ -8,6 +8,16 @@ import { createSandbox, install, readJson, readText, runCli, toPosix, writeText 
 
 const THREE_HOURS_AGO = () => new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
 
+test('prints the run usage for run help without an error', (t) => {
+  const sandbox = createSandbox(t);
+
+  const result = runCli(sandbox, ['run', 'help']);
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /run scan/);
+  assert.equal(result.stderr, '');
+});
+
 test('installs the deny rules into the gf home settings', (t) => {
   const sandbox = createSandbox(t);
 
