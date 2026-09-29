@@ -35,7 +35,7 @@ Script **không ghi đè** file có sẵn (kể cả `README.md` của dự án 
 | `sdd/patterns.md` | File mẫu và code dùng chung |
 | `sdd/decisions/adr-template.md` | Mẫu ADR |
 | `sdd/specs/_template/` | Mẫu spec, plan, tasks |
-| `sdd/scripts/` | `new-spec.sh`, `check-spec.sh`, `check-scope.sh`, `lib.sh` |
+| `sdd/scripts/` | `new-spec.sh`, `check-ready.sh`, `check-spec.sh`, `check-scope.sh`, `lib.sh` |
 
 ## Gỡ
 Xóa `AGENTS.md`, file adapter, `sdd/`, `.github/workflows/sdd-check.yml`, `.github/pull_request_template.md`.

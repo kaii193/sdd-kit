@@ -200,7 +200,7 @@ Merge, rồi 10–15 phút với prompt [P12](#p12--replan): roadmap, ADR thiế
 | Refactor không đổi hành vi | Không nếu nhỏ; có nếu nhiều module | `refactor/...` |
 | Nâng version, cấu hình, tài liệu | Không | `chore/...` |
 
-CI mặc định chỉ kiểm tra branch `feature/`. Quy trình nặng cho việc nhỏ sẽ khiến team bỏ quy trình.
+CI mặc định chỉ kiểm tra branch `feat/NNN-...` và `feature/NNN-...`; branch `feat/` không có số spec được bỏ qua. Quy trình nặng cho việc nhỏ sẽ khiến team bỏ quy trình.
 
 ---
 
@@ -216,7 +216,7 @@ CI mặc định chỉ kiểm tra branch `feature/`. Quy trình nặng cho việ
 
 | Gate | Trước khi | Điều kiện | Kiểm tra tự động |
 |---|---|---|---|
-| G1 | Viết plan | Spec approved, không còn 🔴, có Phụ thuộc, có AC | `check-spec.sh` |
+| G1 | Viết plan | Spec approved và đạt mọi tiêu chí sẵn sàng: không còn 🔴, Phụ thuộc đúng từ khóa, mỗi FR có AC, AC đủ Given/When/Then và không có từ mơ hồ, luồng lỗi trỏ tới AC, Ngoài phạm vi có nội dung, không còn nhãn chưa xác nhận | `check-ready.sh` (qua `check-spec.sh`) |
 | G2 | Viết code | Plan approved, có Tái sử dụng, Pattern | `check-spec.sh` |
 | G3 | Merge | Checklist tasks.md, CI xanh, spec khớp code | CI + PR template |
 
@@ -228,9 +228,11 @@ CI mặc định chỉ kiểm tra branch `feature/`. Quy trình nặng cho việ
 | Lệnh | Tác dụng |
 |---|---|
 | `bash sdd/scripts/new-spec.sh <ten> [--branch]` | Tạo spec mới, đánh số tự động |
-| `bash sdd/scripts/check-spec.sh [NNN-ten]` | G1/G2: trạng thái, câu hỏi 🔴, Phụ thuộc, AC, plan |
+| `bash sdd/scripts/check-ready.sh [NNN-ten]` | G1: spec đạt các tiêu chí sẵn sàng chưa |
+| `bash sdd/scripts/check-spec.sh [NNN-ten]` | G1/G2: trạng thái spec và plan, chạy `check-ready.sh` |
 | `bash sdd/scripts/check-scope.sh [NNN-ten]` | Module bị sửa có khớp mục Phụ thuộc không |
-Không truyền tham số → tự suy spec từ branch `feature/NNN-...`.
+
+Không truyền tham số → tự suy spec từ branch `feat/NNN-...` hoặc `feature/NNN-...`.
 
 `check-scope.sh` báo:
 - ✗ Module bị sửa nhưng không khai báo
@@ -240,7 +242,7 @@ Không truyền tham số → tự suy spec từ branch `feature/NNN-...`.
 - ! File ngoài mọi module / file hạ tầng dùng chung (`SHARED_PATHS`)
 
 ### 8.2 GitHub Actions
-`.github/workflows/sdd-check.yml` chạy hai script trên mọi PR từ branch `feature/`. Thêm vào branch protection để bắt buộc.
+`.github/workflows/sdd-check.yml` chạy hai script trên mọi PR từ branch `feat/` hoặc `feature/`. Thêm vào branch protection để bắt buộc.
 
 ### 8.3 CI khác
 Chỉ cần: checkout đầy đủ lịch sử, bash ≥ 4, đặt `SDD_BRANCH` và `SDD_BASE`. Ví dụ GitLab:

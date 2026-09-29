@@ -7,6 +7,7 @@
 
 > Spec trả lời **CÁI GÌ** và **TẠI SAO**. Chi tiết kỹ thuật để cho plan.md.
 > Trạng thái: `draft` → `in-review` → `approved` → `implemented` (hoặc `superseded`).
+> Chỉ đặt `approved` khi `bash sdd/scripts/check-ready.sh` pass. Nhãn `[SUY ĐOÁN]`, `[ĐỀ XUẤT]` phải được dev xác nhận rồi xóa trước đó.
 
 ---
 
@@ -43,7 +44,9 @@
 2. Hệ thống ...
 
 ### Luồng thay thế & lỗi
-- **Nếu** <điều kiện> **thì** <phản hồi>
+> Mỗi luồng trỏ tới AC kiểm tra nó, ví dụ `(AC-2)`. Không có luồng lỗi nào thì xóa dòng mẫu.
+
+- **Nếu** <điều kiện> **thì** <phản hồi> (AC-x)
 
 ## 6. Yêu cầu chức năng
 | ID | Yêu cầu | Ưu tiên |
@@ -57,6 +60,8 @@
 
 ## 8. Tiêu chí nghiệm thu
 > Mỗi AC phải chuyển được thành ít nhất một test tự động. Có số liệu, mã lỗi, trạng thái cụ thể.
+> Không dùng từ mơ hồ trong Given/When/Then (danh sách `VAGUE_WORDS` trong `sdd/config.sh`).
+> AC giao diện: nêu viewport, asset (đường dẫn file), layout (có mặt, thứ tự, chứa trong, vị trí tương đối). Không so sánh screenshot.
 
 **AC-1** (FR-1)
 - **Given** <trạng thái ban đầu>

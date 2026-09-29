@@ -4,7 +4,7 @@ on:
 
 jobs:
   sdd:
-    if: startsWith(github.head_ref, 'feature/')
+    if: startsWith(github.head_ref, 'feat/') || startsWith(github.head_ref, 'feature/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

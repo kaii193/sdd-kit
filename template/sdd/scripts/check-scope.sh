@@ -4,7 +4,7 @@ source "$(dirname "$0")/lib.sh"
 
 dir="$(find_spec_dir "${1:-}")"
 if [ -z "$dir" ]; then
-  yellow "Không xác định được spec (branch không có dạng feature/NNN-...). Bỏ qua."
+  yellow "Không xác định được spec (branch không có dạng feat/NNN-... hoặc feature/NNN-...). Bỏ qua."
   exit 0
 fi
 spec="$dir/spec.md"

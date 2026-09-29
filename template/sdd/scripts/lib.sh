@@ -17,7 +17,7 @@ find_spec_dir() {
   fi
   local branch="${SDD_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"
   local num
-  num="$(printf '%s' "$branch" | sed -nE 's#^(.*/)?feature/([0-9]{3})-.*#\2#p')"
+  num="$(printf '%s' "$branch" | sed -nE 's#^(.*/)?(feat|feature)/([0-9]{3})-.*#\3#p')"
   [ -z "$num" ] && return 0
   local d
   for d in "$ROOT"/sdd/specs/"$num"-*; do
