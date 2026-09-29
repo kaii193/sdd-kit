@@ -152,6 +152,25 @@ git -C "$workspace/worktree" -c user.email=test@example.com -c user.name=test -c
 output="$(cd "$home" && GF_CODE_DIR="$workspace/worktree" bash .gf/scripts/check-scope.sh "$specs/valid" 2>&1 | strip_colors)" && status=0 || status=$?
 assert_outcome scope-uses-gf-code-dir "$status" "$output" 1 "Module 'promotion' khai báo 'Chỉ đọc' nhưng bị sửa" && pass scope-uses-gf-code-dir
 
+echo "== check-scope: các cách lách đã biết (review #2, #3, #4)"
+git_quiet checkout -q main
+git_quiet checkout -q -b feat/003-unicode
+echo "tệp mới" > "$code/src/cart/giỏ-hàng.ts"
+git_quiet add -A
+git_quiet commit -qm "thêm file tên có dấu vào cart"
+expect_script scope-unicode-file-in-read-only-module 1 "Module 'cart' khai báo 'Chỉ đọc' nhưng bị sửa" check-scope.sh "$specs/valid"
+
+git_quiet checkout -q main
+git_quiet checkout -q -b feat/004-move-out
+git_quiet mv src/cart/index.ts src/pricing/moved-from-cart.ts
+git_quiet commit -qm "chuyển file ra khỏi cart"
+expect_script scope-file-moved-out-of-read-only-module 1 "Module 'cart' khai báo 'Chỉ đọc' nhưng bị sửa" check-scope.sh "$specs/valid"
+
+git_quiet checkout -q main
+git_quiet checkout -q -b feat/005-lowercase
+commit_change cart "sửa cart"
+expect_script scope-lowercase-relation 1 "quan hệ 'chỉ đọc' không hợp lệ" check-scope.sh "$specs/r3a-relation-lowercase"
+
 echo
 echo "$passed passed, $failed failed"
 if [ "$failed" -gt 0 ]; then exit 1; fi

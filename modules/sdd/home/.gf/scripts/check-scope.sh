@@ -28,13 +28,13 @@ done < <(awk -F'|' '
 
 declare -A TOUCHED=()
 outside=(); shared=()
-while IFS= read -r f; do
+while IFS= read -r -d '' f; do
   [ -z "$f" ] && continue
   path_in "$f" "${IGNORE_PATHS[@]}" && continue
   if path_in "$f" "${SHARED_PATHS[@]}"; then shared+=("$f"); continue; fi
   m="$(module_of "$f")"
   if [ -n "$m" ]; then TOUCHED["$m"]+="$f"$'\n'; else outside+=("$f"); fi
-done < <(git -C "$code_dir" diff --name-only "$base"...HEAD)
+done < <(git -C "$code_dir" -c core.quotePath=false diff --name-only --no-renames -z "$base"...HEAD)
 
 errors=0; warns=0
 err()  { red "  ✗ $*"; errors=$((errors+1)); }
@@ -46,21 +46,28 @@ echo "  Khai báo: ${k1:-(trống)}"
 echo "  Bị sửa:   ${k2:-(không có)}"
 echo
 
+for m in "${!REL[@]}"; do
+  case "${REL[$m]}" in
+    "Chỉ đọc"|"Sửa nội bộ"|"Sửa hợp đồng"|"Mới"|"Bị ảnh hưởng") ;;
+    *) err "Module '$m': quan hệ '${REL[$m]}' không hợp lệ — dùng đúng một trong: Chỉ đọc, Sửa nội bộ, Sửa hợp đồng, Mới, Bị ảnh hưởng";;
+  esac
+done
+
 for m in "${!TOUCHED[@]}"; do
   files="$(printf '%s' "${TOUCHED[$m]}" | sed '/^$/d' | sed 's/^/        /')"
   if [ -z "${REL[$m]+x}" ]; then
     err "Module '$m' bị sửa nhưng KHÔNG khai báo trong spec:"; echo "$files"
   else
     case "${REL[$m]}" in
-      *"Chỉ đọc"*)      err "Module '$m' khai báo 'Chỉ đọc' nhưng bị sửa:"; echo "$files";;
-      *"Bị ảnh hưởng"*) warn "Module '$m' khai báo 'Bị ảnh hưởng' nhưng bị sửa — cập nhật quan hệ trong spec nếu có chủ đích";;
+      "Chỉ đọc")      err "Module '$m' khai báo 'Chỉ đọc' nhưng bị sửa:"; echo "$files";;
+      "Bị ảnh hưởng") warn "Module '$m' khai báo 'Bị ảnh hưởng' nhưng bị sửa — cập nhật quan hệ trong spec nếu có chủ đích";;
     esac
   fi
 done
 
 for m in "${!REL[@]}"; do
   case "${REL[$m]}" in
-    *"Sửa"*|*"Mới"*) [ -z "${TOUCHED[$m]+x}" ] && warn "Module '$m' khai báo '${REL[$m]}' nhưng chưa có thay đổi";;
+    "Sửa nội bộ"|"Sửa hợp đồng"|"Mới") [ -z "${TOUCHED[$m]+x}" ] && warn "Module '$m' khai báo '${REL[$m]}' nhưng chưa có thay đổi";;
   esac
 done
 
