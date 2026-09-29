@@ -1,12 +1,12 @@
 # Bộ cài npx (GĐ 2)
 
-Ngày: 2026-09-29 · Branch: `feat/npx-installer` (xếp chồng lên `feat/spec-readiness-check`) · Status: **PARTIAL** (C2.1 mới kiểm bằng `file:`, chưa kiểm bằng `github:` thật)
+Ngày: 2026-09-29 · Branch: `feat/npx-installer` (xếp chồng lên `feat/spec-readiness-check`) · Status: **DONE**
 
 ## Goal
 Cài, cập nhật và kiểm tra kit bằng `npx github:kaii193/sdd-kit …`, không cần bash cho bước cài, không ghi đè file người dùng đã sửa. Thay thế `install.sh`.
 
 ## Success criteria
-- [~] **C2.1** Cài `sdd` + `gf` vào repo trống, đúng danh sách file, có `.gf/manifest.json`. Đã chạy bằng test và bằng `npx file:<tgz>`. **Chưa chạy `npx github:`.**
+- [x] **C2.1** Cài `sdd` + `gf` vào repo trống, đúng danh sách file, có `.gf/manifest.json`. Đã chạy bằng test, bằng `npx file:<tgz>`, và bằng `npx github:kaii193/sdd-kit#feat/npx-installer`.
 - [x] **C2.2** Không có `--yes` thì hỏi các tham số còn thiếu. Có `--yes` mà thiếu tham số bắt buộc thì exit 1 và nêu tên tham số.
 - [x] **C2.3** Tool lạ thì exit 1. `gf` mà thiếu `claude-code` thì exit 1. `cursor`/`github-copilot` cài đúng file (tiêu chí đã sửa theo quyết định của bạn ngày 2026-09-29).
 - [x] **C2.4** `update`: file của bạn giữ nguyên, không sinh `.gf-new`. Script của kit mà bạn đã sửa thì giữ nguyên và có thêm `*.gf-new`. Script chưa sửa thì được nâng cấp. File của kit bị xóa thì được cài lại.
@@ -105,8 +105,30 @@ exit=0
 . .. .cursor .gf .git .github AGENTS.md CLAUDE.md sdd
 ```
 
+`npx github:` thật, sau khi push (repo `kaii193/sdd-kit` là PUBLIC):
+```
+$ npx --yes "github:kaii193/sdd-kit#feat/npx-installer" install --directory . --modules gf --tools claude-code,cursor,github-copilot --yes
+Đã ghi 20 file, bỏ qua 0 file đã tồn tại.
+exit=0
+. .. .cursor .gf .git .github AGENTS.md CLAUDE.md sdd
+"kitVersion": "0.2.0"
+
+$ npx --yes "github:kaii193/sdd-kit#feat/npx-installer" doctor --directory .
+✓ Git repository
+✓ Node ≥ 18 (hiện: 24.18.0)
+✓ bash ≥ 4 (hiện: 5)
+✓ Đã cài kit (.gf/manifest.json)
+✗ AGENTS.md mục 7 (lệnh dự án) đã điền — Thay các lệnh `...` bằng lệnh thật (test, lint, e2e) — gate chạy các lệnh này
+✗ MODULE_GLOBS trong sdd/config.sh khớp thư mục có thật — Không có thư mục: src — sửa MODULE_GLOBS cho khớp cấu trúc dự án
+! Biến môi trường TELEGRAM_BOT_TOKEN (chế độ độc lập) — Đặt TELEGRAM_BOT_TOKEN để runner gửi báo cáo Telegram
+! Biến môi trường TELEGRAM_CHAT_ID (chế độ độc lập) — Đặt TELEGRAM_CHAT_ID để runner gửi báo cáo Telegram
+✓ GitHub CLI đã đăng nhập (để mở PR) (chế độ độc lập)
+doctor exit=1
+```
+Kết quả `doctor` như trên là đúng mong đợi: một dự án vừa cài thì chưa điền lệnh và chưa có `src/`.
+
 Kết luận từng tiêu chí:
-- **C2.1** PARTIAL: test `installs sdd and gf…` pass, và `npx file:` cài đủ 19 file. Lệnh `npx github:` chưa chạy.
+- **C2.1** PASS: test `installs sdd and gf…` pass; `npx file:` cài 19 file; `npx github:` cài 20 file (thêm `.github/copilot-instructions.md`).
 - **C2.2** PASS: `rejects --yes without --tools…`, `prompts for missing values…`, `writes nothing when the confirmation is declined`.
 - **C2.3** PASS: `rejects an unknown tool`, `rejects gf without claude-code`, `installs the cursor and copilot rule files…`.
 - **C2.4** PASS: bốn test đầu của `update`.
@@ -124,7 +146,7 @@ Kết luận từng tiêu chí:
 Không tách nhỏ hơn được, vì không thể xóa `install.sh` trước khi có CLI thay thế, và CLI không có test thì không review được.
 
 ## Not done / follow-ups
-- Chạy `npx github:kaii193/sdd-kit install …` thật sau khi push. Nếu repo private, mỗi người cần quyền git tới repo.
+- Lệnh không có `#branch` (`npx github:kaii193/sdd-kit …`) sẽ lấy `main`. Lệnh này chỉ chạy được sau khi hai PR GĐ 1 và GĐ 2 được merge.
 - `doctor` kiểm `.claude/settings.json` (danh sách cấm): làm ở GĐ 6 (C6.8).
 - `doctor` gọi `bash` theo PATH. Trên Windows, nếu `C:\Windows\System32\bash.exe` (WSL) đứng trước Git Bash trong PATH, kết quả kiểm có thể sai. Chưa xử lý.
 - Repo kit vẫn chưa có `.gitattributes` (lỗi review #9 ở phía repo kit).
