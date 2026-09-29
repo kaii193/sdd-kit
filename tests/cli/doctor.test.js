@@ -120,7 +120,7 @@ test('flags a missing skill', (t) => {
   const result = doctor(sandbox);
 
   assert.equal(result.status, 1);
-  assert.match(result.stdout, /✗ Skill và CLI .* — Thiếu: skill gf-spec/);
+  assert.match(result.stdout, /✗ Skill, agent và CLI .* — Thiếu: skill gf-spec/);
 });
 
 test('only warns when no project is linked yet', (t) => {

@@ -17,4 +17,10 @@ SHARED_PATHS=("package.json" "package-lock.json" "pnpm-lock.yaml" "yarn.lock" "t
 
 SCOPE_MODE="strict"
 
+FORBIDDEN_PATHS=("deploy/")
+
+MAX_AGENT_CALLS_PER_RUN=150
+
+COMMAND_TIMEOUT_SECONDS=900
+
 VAGUE_WORDS=("nhanh" "hợp lý" "thân thiện" "dễ dùng" "phù hợp" "tối ưu" "mượt" "đẹp" "ổn định" "v.v")
